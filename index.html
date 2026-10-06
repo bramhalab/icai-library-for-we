@@ -56,6 +56,42 @@ iframe{flex:1;border:0;width:100%;background:#fff}
  #side.open{transform:none}
  #main{padding:14px 12px 40px}}
 @media(prefers-reduced-motion:reduce){#side{transition:none}}
+
+.subs{display:none!important}
+#modes{display:none}.prac #modes{display:inline-flex}
+#modes button{background:var(--card);border:1px solid var(--acc);padding:6px 10px;font:12px 'Courier New',monospace;color:var(--acc)}
+#modes button.on{background:var(--acc);color:var(--paper)}
+#stage{flex:1;min-height:0;display:grid;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr)}
+#stage iframe{width:100%;height:100%;min-height:0}
+#pg{overflow:auto;background:var(--paper);border-left:3px double var(--ledger);padding:10px;min-height:0}
+.m-pdf #pg{display:none}.m-work #vf{display:none}.m-split #stage{grid-template-columns:1fr 1fr}
+@media(max-width:900px){.m-split #stage{grid-template-columns:1fr;grid-template-rows:1fr 1fr}#pg{border-left:0;border-top:3px double var(--ledger)}}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.tabs button{background:var(--card);border:1.5px solid var(--rule);padding:6px 12px;font:13px Palatino,Georgia,serif}.tabs button.on{border-color:var(--acc);color:var(--acc);font-weight:700}
+#notes{width:100%;min-height:55vh;font:15px/1.6 'Courier New',monospace;color:var(--ink);background:var(--card) linear-gradient(var(--rule) 1px,transparent 1px) 0 0/100% 24px;border:1px solid var(--rule);padding:8px;resize:vertical}
+#cmd{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--acc);padding:9px 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chip{border:1px solid var(--ledger);background:var(--card);padding:3px 10px;font-size:13px;cursor:pointer;border-radius:14px}
+.acard{background:var(--card);border:1px solid var(--rule);box-shadow:2px 3px 0 var(--rule);padding:10px;margin:10px 0}
+.ah{display:flex;justify-content:space-between;align-items:center}.ah b{font:700 16px Palatino,Georgia,serif;color:var(--acc)}
+.ah button,.r button{background:transparent;border:0;font-size:18px;color:var(--soft);padding:0 6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.two.one{grid-template-columns:1fr}
+.sh{font:700 12px 'Courier New',monospace;color:var(--ledger);border-bottom:2px solid var(--ledger);padding-bottom:3px;margin-bottom:4px}
+.r{display:flex;gap:3px;margin-bottom:3px}.r input{min-width:0;font:13px Georgia,serif;color:var(--ink);background:var(--paper);border:1px solid var(--rule);padding:5px}
+.r .lb{flex:2}.r .am{flex:1;text-align:right;font-family:'Courier New',monospace}
+.add{background:transparent;border:1px dashed var(--ledger);color:var(--ledger);font:12px 'Courier New',monospace;padding:3px 8px;margin:4px 0}
+.tot{font:700 13px 'Courier New',monospace;text-align:right;border-top:2px solid var(--ink);padding-top:3px}
+.chk{font:12px 'Courier New',monospace;margin-top:6px;color:var(--soft)}.chk.ok{color:#2F6B4F;font-weight:700}
+.acard details{margin-top:6px;font-size:13px;color:var(--soft)}
+@media(max-width:560px){.two{grid-template-columns:1fr}}
+.calc{width:min(100%,340px);margin:6px auto;background:#25232a;border-radius:12px;padding:14px;color:#fff;font-family:system-ui,sans-serif;box-shadow:0 4px 0 #111}
+.cb{font-weight:700;font-size:13px;display:flex;justify-content:space-between;color:#ccc;margin-bottom:6px}
+.lcdw{background:#cfd8d4;color:#111;border-radius:4px;padding:6px 10px;box-shadow:inset 0 2px 5px #0006;height:74px;position:relative;overflow:hidden}
+#ind{font:700 11px 'Courier New',monospace;min-height:14px}#lcd{font:34px 'Courier New',monospace;text-align:right;position:absolute;right:10px;bottom:4px;white-space:nowrap}
+#tape{background:#cfd8d4;color:#111;font:12px 'Courier New',monospace;max-height:90px;overflow:auto;margin-top:6px;padding:4px 8px;border-radius:4px}#tape .on{background:#111;color:#cfd8d4}
+.kg{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:12px}
+.kg button{height:40px;border:0;border-radius:6px;background:#3d3d43;color:#eee;font:17px system-ui,sans-serif;box-shadow:0 3px 0 #111;padding:0}
+.kg button:active{transform:translateY(2px);box-shadow:none}
+.kg .sm{font-size:9px;line-height:1.1}.kg .pu{background:#7a1f6e}.kg .p{grid-row:span 2;height:auto}.kg .lt{background:#e5e5e5;color:#222}
+.kg i{display:block}.cap{grid-column:5/7;text-align:center;font:9px system-ui;color:#ccc;align-self:end}
 </style>
 </head>
 <body>
@@ -65,7 +101,7 @@ iframe{flex:1;border:0;width:100%;background:#fff}
   <nav id="side" aria-label="Folders"></nav>
   <main id="main"></main>
 </div>
-<div id="viewer"><div id="bar"><button class="btn" id="close">Back</button><b id="vt"></b><a class="btn" id="vo" target="_blank" rel="noopener">New tab</a></div><iframe id="vf" title="PDF"></iframe></div>
+<div id="viewer" class="m-pdf"><div id="bar"><button class="btn" id="close">Back</button><b id="vt"></b><span id="modes"><button data-m="pdf" class="on">PDF</button><button data-m="split">Split</button><button data-m="work">Practice</button></span><a class="btn" id="vo" target="_blank" rel="noopener">New tab</a></div><div id="stage"><iframe id="vf" title="PDF"></iframe><section id="pg" aria-label="Practice playground"></section></div></div>
 <script>
 const REPO="Brand1809/ICAI_SM_CFA",API="https://huggingface.co/api/datasets/"+REPO+"/tree/main",RAW="https://huggingface.co/datasets/"+REPO+"/resolve/main/";
 const $=id=>document.getElementById(id),enc=p=>p.split("/").map(encodeURIComponent).join("/"),base=p=>p.split("/").pop(),par=p=>p.split("/").slice(0,-1).join("/");
@@ -111,8 +147,7 @@ $("ed").onclick=()=>{const o=eds.concat("all");ed=o[(o.indexOf(ed)+1)%o.length];
 const sc=()=>cur.t==="s"?vis().filter(f=>f.s===cur.id):vis();
 function dirsOf(list,p){const o={},pre=p?p+"/":"";list.forEach(f=>{if(!f.path.startsWith(pre))return;const r=f.path.slice(pre.length).split("/");if(r.length>1)o[r[0]]=(o[r[0]]||0)+1});return Object.keys(o).sort(NC.compare).map(n=>[pre+n,o[n]])}
 const subOf=()=>cur.t==="s"?SUBJ.find(j=>j.id===cur.id):null;
-function side(){const S=$("side");S.innerHTML='<div class="h">Subjects</div>';
- SUBJ.forEach(s=>S.append(node(s.name,0,cur.t==="s"&&cur.id===s.id&&!cur.p,"&#9679;",null,()=>go("s",s.id,"","subj"))));
+function side(){const S=$("side");S.innerHTML="";
  const sub=subOf();S.insertAdjacentHTML("beforeend",'<div class="h"></div>');S.lastChild.textContent=sub?sub.name+" folders":"Folders";
  const list=sc(),key=(cur.t==="s"?"s"+cur.id:"d")+"|";
  const walk=(p,dp)=>dirsOf(list,p).forEach(([d])=>{const has=dirsOf(list,d).length,open=exp.has(key+d);
@@ -149,8 +184,156 @@ addEventListener("hashchange",()=>{closeV();render()});
 $("fbtn").onclick=()=>{play("tick");$("side").classList.toggle("open")};
 
 function openFile(p){play("file");let rc=JSON.parse(localStorage.getItem("recent")||"[]").filter(x=>x!==p);rc.unshift(p);localStorage.setItem("recent",JSON.stringify(rc.slice(0,5)));
- const u=RAW+enc(p);$("vt").textContent=base(p);$("vo").href=u;$("vf").src=u;$("viewer").classList.add("on")}
+ const u=RAW+enc(p);$("vt").textContent=base(p);$("vo").href=u;$("vf").src=u;$("viewer").classList.add("on");pgOpen(p)}
 function closeV(){$("viewer").classList.remove("on");$("vf").src="about:blank"}
+
+/* ===== practice playground: Accounting inside Practice Set only ===== */
+const D=[];
+// A(name, aliases, group, left, right, note, sideLabels) ; "~" = no To/By ; right "" = single-column statement
+function ADD(n,al,g,l,r,note,lab){D.push({n,al,g,l:l.split("|"),r:r?r.split("|"):null,note,lab:lab||"Debit (Dr.)|Credit (Cr.)"})}
+const BS="Liabilities|Assets",RP="Receipts (Dr.)|Payments (Cr.)";
+ADD("Ledger Account","ledger,t account,general ledger","Ch 2 - Accounting Process","Balance b/d (opening, if debit)|Debit entries (To ...)|Balance c/d (if credit balance)","Balance b/d (opening, if credit)|Credit entries (By ...)|Balance c/d (if debit balance)","Columns on each side: Date, Particulars, J.F., Amount. 'To' on debit side, 'By' on credit side. Nominal accounts are not balanced; they go to P&L. Keywords: principal books of account, posting, balance c/d, balance b/d.");
+ADD("Cash Book","double column cash book,cash","Ch 2 - Accounting Process","Balance b/d (Cash | Bank)|Capital, Sales, Receipts from debtors|Discount Allowed (discount column)|Cash deposited into bank (C - contra)","Payments to creditors, expenses|Discount Received (discount column)|Cash withdrawn from bank (C - contra)|Balance c/d (Cash | Bank)","Three columns per side: Discount, Cash, Bank. Contra entry is marked 'C'. Keywords: contra entry, discount column, book of original entry.");
+ADD("Trial Balance","tb","Ch 2 - Accounting Process","~Assets (Building, Plant, Inventory, Debtors, Cash, Bank)|~Expenses and Losses|~Drawings","~Capital|~Liabilities (Creditors, Loans, Bills Payable)|~Incomes and Gains (Sales, Discount Received)","Total of Debit balances = Total of Credit balances. It is a statement, not an account. Keywords: arithmetical accuracy, suspense account.","Dr. Balances|Cr. Balances");
+ADD("Bank Reconciliation Statement","brs,bank reconciliation","Ch 3 - BRS","~Balance as per Cash Book (Dr. / favourable)|~Add: Cheques issued but not yet presented for payment|~Add: Direct credits by bank not in Cash Book (interest, dividend)|~Less: Cheques deposited but not yet collected|~Less: Direct debits by bank (bank charges)|~Balance as per Pass Book (Cr.)","","Format starts from favourable Cash Book balance. Signs reverse if you start from the bank overdraft balance or Pass Book. Keywords: Pass Book, cheques issued but not presented, cheques deposited but not collected.");
+ADD("Machinery Account","asset account,plant account,fixed asset","Ch 5 - Depreciation","Balance b/d|Bank A/c (cost of machine)|Bank A/c (installation expenses)","Depreciation A/c (if credited to asset)|Asset Disposal A/c (on sale)|Balance c/d","Cost = purchase price + installation + all costs to bring asset to working condition. Straight Line: (Cost - Scrap value) / Useful life. WDV rate (%) = [1 - (Residual value / Cost)^(1/n)] x 100, where n = useful life. Keywords: historical cost, depreciable amount, useful life.");
+ADD("Depreciation Account","depreciation","Ch 5 - Depreciation","Machinery A/c (or Provision for Depreciation A/c)","Profit and Loss A/c","Depreciation A/c is a nominal account; it is closed by transfer to P&L. Keywords: straight line method, written down value method, depreciation for the period of use.");
+ADD("Provision for Depreciation Account","accumulated depreciation","Ch 5 - Depreciation","Asset Disposal A/c (on sale of asset)|Balance c/d","Balance b/d|Depreciation A/c","Used when the asset is shown at historical cost and depreciation accumulates separately. Keywords: accumulated depreciation, historical cost.");
+ADD("Asset Disposal Account","disposal,sale of asset","Ch 5 - Depreciation","Asset A/c (cost)|Profit on sale (to P&L) - balancing figure","Provision for Depreciation A/c|Bank A/c (sale proceeds)|Loss on sale (to P&L) - balancing figure","Profit or loss on disposal = Sale proceeds - Book value. Keywords: book value, profit/loss on disposal.");
+ADD("Bills Receivable Account","bills receivable,br,bill receivable","Ch 6 - Bills of Exchange","Balance b/d|Debtors A/c (bills received)","Bank A/c (collected on maturity)|Debtors A/c (dishonoured)|Creditor A/c (endorsed)|Balance c/d","Bills Receivable is an asset (personal / real). Keywords: drawer, drawee, maturity, dishonour, endorsement, discounting.");
+ADD("Bills Payable Account","bills payable,bp,bill payable","Ch 6 - Bills of Exchange","Bank A/c (paid on maturity)|Balance c/d","Balance b/d|Creditors A/c (bills accepted)","Bills Payable is a liability. Keywords: acceptance, maturity, noting charges, renewal.");
+ADD("Manufacturing Account","manufacturing,factory","Ch 7 - Final Accounts","Opening Work-in-Process|Raw Material Consumed (Opening inventory + Purchases - Closing inventory)|Direct Wages|Direct Expenses (royalty, hire charges per unit) = PRIME COST|Factory Overheads / Indirect Expenses (repairs, depreciation) = FACTORY COST","By-products at net realisable value|Closing Work-in-Process|Trading A/c - Cost of production (balancing figure)","Raw Material Consumed = Opening inventory + Purchases - Closing inventory. Prime cost = RM consumed + direct wages + direct expenses. Keywords: prime cost, factory cost, cost of production, work-in-process, by-product, overheads.");
+ADD("Trading Account","trading,gross profit","Ch 7 - Final Accounts","Opening Inventory|Purchases (less Returns)|Carriage Inwards, Wages, Direct expenses|Gross Profit c/d (balancing figure)","Sales (less Returns)|Closing Inventory|Gross Loss c/d (if any)","Gross Profit = Net Sales - Cost of Goods Sold. Keywords: cost of goods sold, gross profit, direct expenses, closing inventory.");
+ADD("Profit and Loss Account","p&l,pl,profit and loss,profit & loss","Ch 7 - Final Accounts","Gross Loss b/d (if any)|Salaries, Rent, Insurance, Discount Allowed|Selling and distribution expenses|Bad debts + Provision for doubtful debts|Depreciation|Interest on loan|Net Profit (transferred to Capital A/c)","Gross Profit b/d|Discount Received|Commission, Interest, Rent received|Net Loss (transferred to Capital A/c)","Indirect expenses and incomes are shown here. Keywords: net profit, indirect expenses, operating expenses, other income.");
+ADD("Balance Sheet","bs,balance sheet,sole proprietor balance sheet","Ch 7 - Final Accounts","~Capital (+ Net Profit - Drawings)|~Long-term loans|~Trade payables, Bills Payable|~Outstanding expenses|~Income received in advance","~Fixed Assets (Land and Building, Plant, Furniture)|~Investments|~Closing Inventory|~Trade receivables (less Provision), Bills Receivable|~Cash and Bank|~Prepaid expenses, Accrued income","Total Liabilities = Total Assets. Keywords: financial position, fixed assets, current assets, current liabilities, capital.",BS);
+ADD("Receipts and Payments Account","receipts and payments,r&p,rp","Ch 8 - NPO","~Opening balance: Cash in hand, Cash at bank|~Subscriptions|~Donations|~Entrance fees|~Sale of fixed assets|~Interest and other receipts","~Salaries and wages|~General expenses, Rent|~Purchase of fixed assets, Investments|~Closing balance: Cash in hand, Cash at bank","Summary of the Cash Book without date column; includes all receipts and payments, capital or revenue, of any period. Shows no surplus or deficit. Keywords: summary of cash book, not based on accrual, opening and closing balances.",RP);
+ADD("Income and Expenditure Account","income and expenditure,i&e,ie","Ch 8 - NPO","Salaries, Rent, General expenses (current year)|Outstanding expenses (adjusted)|Depreciation|Surplus (excess of income over expenditure) - transferred to Capital Fund","Subscriptions (current year, accrual basis)|Donations (ordinary / revenue)|Interest accrued|Entrance fees (if treated as revenue)|Deficit (excess of expenditure over income)","Equivalent to the Profit and Loss Account of a profit-making entity. Capital receipts and capital expenditure are excluded. Surplus / Deficit goes to Capital Fund. Keywords: surplus, deficit, accrual principle, capital fund, fund accounting.","Expenditure (Dr.)|Income (Cr.)");
+ADD("Statement of Affairs","soa,single entry balance sheet","Ch 9 - Incomplete Records","Capital (balancing figure)|Loans, Bank overdraft|Sundry creditors|Bills payable|Outstanding expenses","Building|Machinery|Furniture|Inventory|Sundry debtors|Bills receivable|Loans and advances|Cash and bank|Prepaid expenses","Capital = Assets - Liabilities. Similar to a Balance Sheet but prepared from partly recorded transactions. Keywords: single entry system, net worth, incomplete records.",BS);
+ADD("Computation of Profit by Capital Comparison","net worth method,capital comparison,profit by capital","Ch 9 - Incomplete Records","~Capital at the end (a)|~Add: Drawings|~Less: Fresh capital introduced|~Less: Capital at the beginning (b)|~Profit = (a) - (b)","","Profit = Closing capital + Drawings - Fresh capital - Opening capital. Keywords: Net Worth method, Statement of Affairs method.");
+ADD("Total Debtors Account","debtors control,total debtors,sales ledger adjustment","Ch 9 - Incomplete Records","Balance b/d|Credit Sales (balancing figure if unknown)|Bills Receivable dishonoured|Cash/Bank refunded to customers","Cash/Bank received|Discount Allowed|Sales Returns|Bad debts|Bills Receivable received|Balance c/d","Used to find credit sales when it is not given. Keywords: credit sales, balancing figure, sales ledger.");
+ADD("Total Creditors Account","creditors control,total creditors,purchase ledger adjustment","Ch 9 - Incomplete Records","Cash/Bank paid|Discount Received|Purchase Returns|Bills Payable accepted|Balance c/d","Balance b/d|Credit Purchases (balancing figure if unknown)","Used to find credit purchases when it is not given. Keywords: credit purchases, purchase ledger.");
+ADD("Profit and Loss Appropriation Account","appropriation","Ch 10 - Partnership","Interest on Capital|Partners' Salary / Commission|Transfer to Reserve|Profit transferred to Partners' Capital/Current A/c (in profit sharing ratio)","Net Profit b/d (from P&L A/c)|Interest on Drawings","Interest on capital, salary and commission are shown here, not in P&L A/c. Drawings do not appear here. Keywords: profit sharing ratio, interest on capital, interest on drawings, partnership deed.");
+ADD("Partner's Capital Account Fixed","fixed capital,capital account fixed","Ch 10 - Partnership","Balance c/d|Withdrawal of capital","Balance b/d|Bank A/c (additional capital)","Under Fixed Capital Method, capital balance stays fixed; all adjustments go to the Current Account. Keywords: fixed capital method.");
+ADD("Partner's Current Account","current account","Ch 10 - Partnership","Drawings|Interest on Drawings|Share of loss|Balance c/d (if debit)","Balance b/d|Interest on Capital|Salary / Commission|Share of profit","Capital A/c (fluctuating) = Capital A/c + Current A/c (fixed). Keywords: current account, fixed capital method.");
+ADD("Partner's Capital Account Fluctuating","fluctuating capital","Ch 10 - Partnership","Drawings|Interest on Drawings|Share of loss|Balance c/d","Balance b/d|Bank A/c (additional capital)|Interest on Capital|Salary / Commission|Share of profit","All adjustments are made in a single Capital Account; balance changes every year. Keywords: fluctuating capital method.");
+ADD("Revaluation Account","revaluation","Ch 10 - Partnership","Decrease in value of assets (Inventory, Furniture)|Increase in liabilities, Provision for doubtful debts|Outstanding expenses|Profit on Revaluation - to old partners' Capital A/c (old ratio)","Increase in value of assets (Building)|Decrease in liabilities|Loss on Revaluation - to old partners' Capital A/c (old ratio)","Prepared on admission, retirement, death. Profit/loss is shared by old partners in the old profit sharing ratio. Keywords: revaluation of assets and liabilities, old ratio.");
+ADD("Memorandum Revaluation Account","memorandum revaluation","Ch 10 - Partnership","Part 1: Decrease in assets / Provision for bad debts|Profit on Revaluation - old partners (old ratio)|Part 2 (reversal): Assets restored to old book value","Part 1: Increase in assets|Part 2 (reversal): Loss on Revaluation - all partners (new ratio)|Part 2: Reverse of Part 1 items","Used when the book values of assets and liabilities are to remain unchanged after admission. Keywords: memorandum revaluation, book values unchanged.");
+ADD("Partners Capital Accounts on Admission","admission capital accounts,capital accounts admission","Ch 10 - Partnership","Goodwill (old partners' capital to new partner's capital)|Loss on Revaluation|Drawings|Balance c/d","Balance b/d|Bank A/c (new partner's capital)|Goodwill (sacrificing partners)|General Reserve / P&L balance|Profit on Revaluation","Columns: A, B, C. Goodwill brought by the new partner is credited to old partners in the sacrificing ratio. Sacrifice = Old share - New share. Keywords: sacrificing ratio, goodwill, new profit sharing ratio, admission.");
+ADD("Realisation Account","realisation,dissolution","Ch 10 - Partnership","Sundry assets (except cash/bank) at book value|Bank A/c (liabilities paid)|Realisation expenses|Partner's Capital A/c (assets/liabilities taken over, if applicable)|Profit on Realisation - to partners' Capital A/c","Liabilities at book value|Bank A/c (assets realised)|Partner's Capital A/c (assets taken over)|Loss on Realisation - to partners' Capital A/c","Opened on dissolution of the firm. Keywords: dissolution, realisation of assets, settlement of liabilities.");
+ADD("Equity Share Capital Account","share capital,equity share capital","Ch 11 - Company Accounts","Forfeited Shares A/c (amount called up)|Calls in Arrears|Balance c/d","Share Application A/c|Share Allotment A/c|Share First Call / Final Call A/c","Authorised = Issued + Unissued. Called-up = Paid-up + Calls in arrears - Calls in advance. Keywords: authorised, issued, subscribed, called-up, paid-up capital.");
+ADD("Share Application Account","application,application and allotment","Ch 11 - Company Accounts","Bank A/c (refund of excess application money)|Share Capital A/c (application money on allotted shares)|Share Allotment A/c (excess adjusted)","Bank A/c (application money received on all shares applied)","Application money must be at least 5% of nominal value (Section 39), SEBI min. 25% of issue price. Keywords: oversubscription, pro-rata allotment, minimum subscription.");
+ADD("Share Allotment Account","allotment","Ch 11 - Company Accounts","Share Capital A/c (allotment money due)|Securities Premium A/c (if any)","Share Application A/c (excess adjusted)|Bank A/c (received)|Calls in Arrears A/c","Allotment money = Amount due on allotment. Keywords: securities premium, calls in arrears, allotment money.");
+ADD("Forfeited Shares Account","share forfeiture,forfeiture,forfeited shares","Ch 11 - Company Accounts","Share Capital A/c (discount allowed on reissue)|Capital Reserve A/c (gain on reissue)","Share Capital A/c (amount received on forfeited shares)","Forfeiture: shareholder fails to pay calls. Gain on reissue is transferred to Capital Reserve. Keywords: forfeiture, reissue, capital reserve, calls in arrear.");
+ADD("Debentures Account","debentures,10% debentures","Ch 11 - Company Accounts","Debenture holders / Bank (redemption)|Balance c/d","Balance b/d|Debenture Application and Allotment A/c","Debenture is a loan (long-term borrowing). Keywords: debenture holders, discount on issue, redemption, DRR.");
+ADD("Debenture Interest Account","debenture interest","Ch 11 - Company Accounts","Bank A/c (interest paid)|TDS Payable A/c|Outstanding Interest c/d","Profit and Loss A/c (finance cost)","Interest is a charge against profits, paid whether or not profit is made. Keywords: finance cost, TDS, interest payable.");
+ADD("Capital Redemption Reserve Account","crr,capital redemption reserve","Ch 11 - Company Accounts","Bonus issue (Equity Share Capital)|Balance c/d","Balance b/d|Profit and Loss A/c (transfer)|General Reserve (transfer)","Created on redemption of preference shares out of profits. Can be used only for issuing fully paid bonus shares. Keywords: redemption of preference shares, CRR, bonus issue.");
+
+const norm=s=>s.toLowerCase().replace(/[^a-z0-9& ]/g," ").replace(/\s+/g," ").trim();
+function find(s){s=norm(s);if(!s)return[];
+ const sc=D.map(d=>{const names=[d.n,...d.al.split(",")].map(norm);let b=0;
+  for(const x of names){if(x===s)b=Math.max(b,100);else if(x.startsWith(s))b=Math.max(b,70);else if(x.includes(s))b=Math.max(b,50);
+   else{const w=s.split(" ");if(w.every(t=>x.includes(t)))b=Math.max(b,40)}}
+  return[d,b]}).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);return sc.map(x=>x[0])}
+
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+let pgPath="",pgS={notes:"",cards:[]},pgBuilt=false;
+const isPA=p=>p.startsWith("Practice Set/")&&subjOf(p)==="acc";
+const pgSave=()=>{try{localStorage.setItem("pg:"+pgPath,JSON.stringify(pgS))}catch(e){}};
+function setMode(m){const v=$("viewer");v.classList.remove("m-pdf","m-split","m-work");v.classList.add("m-"+m);
+ document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));if(m!=="pdf")play("tick")}
+document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+function pgOpen(p){pgPath=p;const pa=isPA(p);$("viewer").classList.toggle("prac",pa);setMode("pdf");if(pa){pgInit();pgLoad()}}
+function pgLoad(){try{pgS=JSON.parse(localStorage.getItem("pg:"+pgPath))||{}}catch(e){pgS={}}pgS.notes=pgS.notes||"";pgS.cards=pgS.cards||[];$("notes").value=pgS.notes;renderCards()}
+function pgInit(){if(pgBuilt)return;pgBuilt=true;
+ $("pg").innerHTML='<div class="tabs"><button data-t="tn" class="on">Working notes</button><button data-t="tf">Formats</button><button data-t="tc">Calculator</button></div>'+
+ '<div id="tn" class="tp"><textarea id="notes" placeholder="Working notes: write your workings here. Saved automatically for this PDF."></textarea></div>'+
+ '<div id="tf" class="tp" hidden><input id="cmd" list="adl" placeholder="Command: account name (trading, revaluation, brs...) then Enter" autocomplete="off"><datalist id="adl">'+D.map(d=>'<option value="'+esc(d.n)+'">').join("")+'</datalist><div class="chips" id="chp"></div><div id="cards"></div></div>'+
+ '<div id="tc" class="tp" hidden>'+calcHTML()+'</div>';
+ document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));document.querySelectorAll(".tp").forEach(t=>t.hidden=t.id!==b.dataset.t);play("tick")});
+ $("notes").oninput=()=>{pgS.notes=$("notes").value;pgSave()};
+ const chips=l=>{$("chp").innerHTML=l.map(d=>'<span class="chip" data-n="'+esc(d.n)+'">'+esc(d.n)+"</span>").join("")};
+ $("cmd").oninput=()=>{const v=$("cmd").value.trim();chips(v.length<2?[]:find(v).slice(0,8))};
+ $("cmd").onkeydown=e=>{if(e.key!=="Enter")return;const v=$("cmd").value.trim();if(/^(list|all|\?|help)$/i.test(v)){chips(D);return}
+  const m=find(v);if(!m.length){$("chp").textContent="No account found. Type list to see all.";return}addCard(m[0]);$("cmd").value="";chips([])};
+ $("chp").onclick=e=>{const n=e.target.dataset.n;if(n){addCard(D.find(d=>d.n===n));$("cmd").value="";chips([])}};
+ $("tc").onclick=e=>{const k=e.target.closest("button[data-k]");if(k){play("tick");press(k.dataset.k)}};cshow()}
+function addCard(d){const [a,b]=d.lab.split("|"),lab=(t,s)=>t.startsWith("~")?t.slice(1):(s?"By ":"To ")+t;
+ pgS.cards.unshift({n:d.n,a,b,l:d.l.map(t=>[lab(t,0),""]),r:d.r?d.r.map(t=>[lab(t,1),""]):null,note:d.note});pgSave();renderCards();play("dir")}
+function upT(d,c){const S=x=>x.reduce((a,r)=>a+(parseFloat(String(r[1]).replace(/,/g,""))||0),0),f=n=>n.toLocaleString("en-IN",{maximumFractionDigits:2});
+ const tl=S(c.l),T=d.querySelectorAll(".tot");T[0].textContent="Total: "+f(tl);
+ if(c.r){const tr=S(c.r),ok=Math.abs(tl-tr)<.005&&tl>0,x=d.querySelector(".chk");T[1].textContent="Total: "+f(tr);x.textContent=ok?"\u2713 Both sides tally":"Difference: "+f(Math.abs(tl-tr));x.className="chk"+(ok?" ok":"")}}
+function rowEl(arr,i,d,c){const r=document.createElement("div");r.className="r";
+ r.innerHTML='<input class="lb" placeholder="Particulars"><input class="am" inputmode="decimal" placeholder="Amount"><button title="Remove row">\u2212</button>';
+ const [lb,am,x]=r.children;lb.value=arr[i][0];am.value=arr[i][1];
+ lb.oninput=()=>{arr[i][0]=lb.value;pgSave()};am.oninput=()=>{arr[i][1]=am.value;pgSave();upT(d,c)};x.onclick=()=>{arr.splice(i,1);pgSave();renderCards()};return r}
+function renderCards(){const C=$("cards");C.innerHTML="";pgS.cards.forEach((c,ci)=>{const d=document.createElement("div");d.className="acard";
+ d.innerHTML='<div class="ah"><b></b><button title="Remove format">\u00d7</button></div><div class="two"></div><div class="chk"></div><details><summary>Format tip</summary><p></p></details>';
+ d.querySelector("b").textContent=c.n;d.querySelector("p").textContent=c.note||"";d.querySelector(".ah button").onclick=()=>{pgS.cards.splice(ci,1);pgSave();renderCards()};
+ const two=d.querySelector(".two");if(!c.r){two.classList.add("one");d.querySelector(".chk").remove()}
+ [["l",c.r?c.a:"Particulars"]].concat(c.r?[["r",c.b]]:[]).forEach(([k,h])=>{const col=document.createElement("div");col.className="side";
+  col.innerHTML='<div class="sh"></div><div class="rows"></div><button class="add">+ row</button><div class="tot"></div>';col.querySelector(".sh").textContent=h;
+  const rows=col.querySelector(".rows"),arr=c[k];arr.forEach((_,i)=>rows.append(rowEl(arr,i,d,c)));
+  col.querySelector(".add").onclick=()=>{arr.push(["",""]);rows.append(rowEl(arr,arr.length-1,d,c));pgSave()};two.append(col)});
+ C.append(d);upT(d,c)})}
+
+/*CALC*/
+const CL={e:"",acc:null,op:null,eq:false,mem:0,gt:0,steps:[],sel:-1,tape:false,err:false,sep:false,prev:"",lastOp:null,lastB:null};
+const SY={"+":"+","-":"\u2212","*":"\u00d7","/":"\u00f7"};
+const ap=(a,o,b,p)=>{if(p){if(o==="*")return a*b/100;if(o==="/")return a/b*100;if(o==="+")return a+a*b/100;return a-a*b/100}
+ return o==="+"?a+b:o==="-"?a-b:o==="*"?a*b:b===0?NaN:a/b};
+const runSteps=st=>{let a=null;st.forEach(s=>{a=s.op&&a!==null?ap(a,s.op,s.v,s.pct):s.v});return a};
+function fmtN(n){if(!isFinite(n)||Math.abs(n)>=1e12)return"E";n=parseFloat(n.toPrecision(12));let s=String(n);if(/e/i.test(s))s=n.toFixed(11).replace(/0+$/,"");return s}
+const cpush=s=>{if(CL.steps.length<150)CL.steps.push(s)};
+const setAcc=v=>{CL.acc=v;if(!isFinite(v))CL.err=true};
+function fresh(){if(CL.eq&&CL.sel<0){CL.acc=null;CL.op=null;CL.steps=[];CL.eq=false}}
+function cshow(){let t=CL.err?"E":CL.e!==""?CL.e:(CL.sel>=0&&CL.steps[CL.sel])?String(CL.steps[CL.sel].v):fmtN(CL.acc===null?0:CL.acc);if(t==="E")CL.err=true;
+ if(CL.sep&&t!=="E"){const m=t.match(/^(-?)(\d+)(.*)$/);if(m)t=m[1]+m[2].replace(/\B(?=(\d{3})+(?!\d))/g,",")+m[3]}
+ $("lcd").textContent=t;$("ind").textContent=[CL.mem?"M":"",CL.gt?"GT":"",CL.sel>=0?"STEP "+(CL.sel+1):"",CL.op?SY[CL.op]:""].filter(Boolean).join("  ");ctape()}
+function ctape(){const T=$("tape");T.hidden=!CL.tape;if(!CL.tape)return;
+ T.innerHTML=CL.steps.length?CL.steps.map((s,i)=>"<div"+(i===CL.sel?' class="on"':"")+">"+(i+1)+". "+(s.op?SY[s.op]+" ":"")+s.v+(s.pct?" %":"")+"</div>").join(""):"<div>No steps yet</div>"}
+function digit(k){fresh();
+ if(k==="."){if(CL.e.includes("."))return;CL.e=(CL.e===""||CL.e==="-")?CL.e+"0.":CL.e+".";return}
+ if(CL.e.replace(/[-.]/g,"").length+(k==="00"?2:1)>12)return;
+ if(/^-?0$/.test(CL.e))CL.e=CL.e.slice(0,-1);if((CL.e===""||CL.e==="-")&&k==="00")k="0";CL.e+=k}
+function oper(o){if(CL.e!==""){const v=parseFloat(CL.e);
+  if(CL.op!==null&&CL.acc!==null){cpush({op:CL.op,v});setAcc(ap(CL.acc,CL.op,v))}else{if(CL.eq)CL.steps=[];cpush({op:"",v});CL.acc=v}}
+ else if(CL.acc===null)CL.acc=0;CL.op=o;CL.e="";CL.eq=false}
+function equals(gt){
+ if(CL.e!==""){const v=parseFloat(CL.e);if(CL.op!==null&&CL.acc!==null){cpush({op:CL.op,v});CL.lastOp=CL.op;CL.lastB=v;setAcc(ap(CL.acc,CL.op,v))}else{cpush({op:"",v});CL.acc=v;CL.lastOp=null}}
+ else if(CL.op!==null&&CL.acc!==null){CL.lastOp=CL.op;CL.lastB=CL.acc;setAcc(ap(CL.acc,CL.op,CL.acc))}
+ else if(CL.eq&&CL.lastOp){setAcc(ap(CL.acc,CL.lastOp,CL.lastB))}
+ else if(CL.acc===null)CL.acc=0;
+ CL.op=null;CL.e="";CL.eq=true;if(gt&&!CL.err)CL.gt+=CL.acc}
+function press(k){const P=CL.prev;CL.prev=k;if(CL.err&&k!=="AC"&&k!=="C")return;
+ if(/^(\d|00|\.)$/.test(k))digit(k);else if("+-*/".includes(k))oper(k);else switch(k){
+ case"=":equals(true);break;
+ case"AC":Object.assign(CL,{e:"",acc:null,op:null,eq:false,steps:[],sel:-1,tape:false,err:false,lastOp:null,lastB:null});break;
+ case"C":CL.e="";CL.err=false;if(CL.acc===null)CL.op=null;break;
+ case"BS":if(CL.e!=="")CL.e=CL.e.slice(0,-1);if(CL.e==="-")CL.e="";break;
+ case"SIGN":if(CL.e!=="")CL.e=CL.e[0]==="-"?CL.e.slice(1):"-"+CL.e;else if(CL.acc!==null)CL.acc=-CL.acc;break;
+ case"SQRT":{const v=CL.e!==""?parseFloat(CL.e):(CL.acc===null?0:CL.acc);if(v<0)CL.err=true;else{fresh();CL.e=fmtN(Math.sqrt(v))}break}
+ case"PCT":if(CL.e!==""&&CL.op!==null&&CL.acc!==null){const b=parseFloat(CL.e);cpush({op:CL.op,v:b,pct:true});setAcc(ap(CL.acc,CL.op,b,true));CL.op=null;CL.e="";CL.eq=true;CL.lastOp=null;if(!CL.err)CL.gt+=CL.acc}
+  else if(CL.e!=="")CL.e=fmtN(parseFloat(CL.e)/100);break;
+ case"MU":if(CL.e!==""&&CL.acc!==null&&(CL.op==="*"||CL.op==="/")){const b=parseFloat(CL.e);setAcc(CL.op==="*"?CL.acc*(1+b/100):CL.acc/(1-b/100));CL.op=null;CL.e="";CL.eq=true;CL.lastOp=null}break;
+ case"M+":case"M-":equals(false);if(!CL.err)CL.mem+=(k==="M+"?1:-1)*CL.acc;break;
+ case"MRC":if(P==="MRC")CL.mem=0;else{fresh();CL.e=fmtN(CL.mem)}break;
+ case"GT":if(P==="GT")CL.gt=0;else{fresh();CL.e=fmtN(CL.gt)}break;
+ case"DISP":CL.sep=!CL.sep;break;
+ case"REV":CL.tape=!CL.tape;CL.sel=CL.tape&&CL.steps.length?CL.steps.length-1:-1;break;
+ case"UP":case"DN":if(!CL.steps.length)break;if(!CL.tape){CL.tape=true;CL.sel=CL.steps.length-1}else CL.sel=Math.max(0,Math.min(CL.steps.length-1,(CL.sel<0?CL.steps.length:CL.sel)+(k==="UP"?-1:1)));break;
+ case"CORR":if(CL.sel>=0&&CL.e!==""){CL.steps[CL.sel].v=parseFloat(CL.e);setAcc(runSteps(CL.steps));CL.op=null;CL.e="";CL.eq=true}else CL.e="";break}
+ cshow()}
+/*ENDCALC*/
+function calcHTML(){const B=(l,k,c)=>'<button data-k="'+k+'"'+(c?' class="'+c+'"':"")+">"+l+"</button>";
+ return '<div class="calc"><div class="cb"><span>CASIO</span><span>MJ-12D &middot; 12 DIGITS</span></div><div class="lcdw"><div id="ind"></div><div id="lcd">0</div></div><div id="tape" hidden></div><div class="kg">'+
+ '<i></i><i></i>'+B("AUTO<br>REVIEW","REV","sm")+B("CORRECT","CORR","sm")+B("&and;","UP")+B("&or;","DN")+
+ B("DISP","DISP","sm lt")+B("&#9654;","BS")+B("+/\u2212","SIGN")+B("&radic;","SQRT")+B("MU","MU","sm")+B("GT","GT","sm")+
+ B("7","7")+B("8","8")+B("9","9")+B("%","PCT")+B("C","C","pu")+B("AC","AC","pu")+
+ B("4","4")+B("5","5")+B("6","6")+B("\u00d7","*")+B("\u00f7","/")+B("MRC","MRC","sm")+
+ B("1","1")+B("2","2")+B("3","3")+B("+","+","p")+B("\u2212","-")+B("M\u2212","M-","sm")+
+ B("0","0")+B("00","00")+B(".",".")+B("=","=")+B("M+","M+","sm")+'</div></div>'}
+addEventListener("keydown",e=>{if(!$("viewer").classList.contains("on")||!$("tc")||$("tc").hidden||/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
+ const m={Enter:"=","=":"=",Backspace:"BS",Escape:"AC",Delete:"C","%":"PCT"}[e.key]||(/^[0-9.+\-*\/]$/.test(e.key)?e.key:null);if(m){e.preventDefault();press(m)}});
 $("close").onclick=()=>{play("back");closeV()};
 
 let tm;$("q").addEventListener("input",e=>{clearTimeout(tm);const v=e.target.value.trim().toLowerCase();play("tick");if(!v){main();return}
