@@ -61,7 +61,7 @@ iframe{flex:1;border:0;width:100%;background:#fff}
 <body>
 <div class="app">
   <div class="brand">CA Foundation Library<small>ICAI study material</small></div>
-  <div class="top"><button class="pill" id="fbtn">Folders</button><input id="q" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="mute">Sound on</button></div>
+  <div class="top"><button class="pill" id="fbtn">Folders</button><input id="q" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="ed" title="Study material edition">Edition</button><button class="pill" id="mute">Sound on</button></div>
   <nav id="side" aria-label="Folders"></nav>
   <main id="main"></main>
 </div>
@@ -104,7 +104,11 @@ const ul=items=>{const u=document.createElement("ul");items.forEach(i=>u.append(
 function node(label,depth,on,tg,onTg,onGo){const d=document.createElement("div");d.className="node"+(on?" on":"");d.tabIndex=0;d.style.paddingLeft=(10+depth*14)+"px";
  d.innerHTML='<span class="tg">'+tg+'</span><span class="nm"></span>';d.querySelector(".nm").textContent=label;
  d.querySelector(".tg").onclick=e=>{e.stopPropagation();onTg&&onTg()};d.onclick=onGo;d.onkeydown=e=>e.key==="Enter"&&onGo();return d}
-const sc=()=>cur.t==="s"?files.filter(f=>f.s===cur.id):files;
+let eds=[],ed="all";
+const vis=()=>ed==="all"?files:files.filter(f=>{const t=f.path.split("/")[0];return !/^ENG_SUB_/.test(t)||t===ed});
+const edLabel=()=>$("ed").textContent="Edition: "+(ed==="all"?"All":ed.replace("ENG_SUB_",""));
+$("ed").onclick=()=>{const o=eds.concat("all");ed=o[(o.indexOf(ed)+1)%o.length];localStorage.setItem("ed",ed);edLabel();play("subj");render()};
+const sc=()=>cur.t==="s"?vis().filter(f=>f.s===cur.id):vis();
 function dirsOf(list,p){const o={},pre=p?p+"/":"";list.forEach(f=>{if(!f.path.startsWith(pre))return;const r=f.path.slice(pre.length).split("/");if(r.length>1)o[r[0]]=(o[r[0]]||0)+1});return Object.keys(o).sort(NC.compare).map(n=>[pre+n,o[n]])}
 const subOf=()=>cur.t==="s"?SUBJ.find(j=>j.id===cur.id):null;
 function side(){const S=$("side");S.innerHTML='<div class="h">Subjects</div>';
@@ -129,7 +133,7 @@ function crumbs(){const c=document.createElement("div");c.className="crumbs";
 const byName=(a,b)=>NC.compare(a.path,b.path);
 function main(){const M=$("main");M.innerHTML="";M.scrollTop=0;const list=sc(),p=cur.p;M.append(crumbs());
  if(cur.t==="d"&&!p){const g=document.createElement("div");g.className="subs";SUBJ.forEach(s=>{const b=document.createElement("button");b.className="sub";
-   b.innerHTML='<span class="p">'+s.p+"</span><h2>"+s.name+'</h2><span class="mono">'+files.filter(f=>f.s===s.id).length+" PDFs</span>";b.onclick=()=>go("s",s.id,"","subj");g.append(b)});M.append(g);
+   b.innerHTML='<span class="p">'+s.p+"</span><h2>"+s.name+'</h2><span class="mono">'+vis().filter(f=>f.s===s.id).length+" PDFs</span>";b.onclick=()=>go("s",s.id,"","subj");g.append(b)});M.append(g);
   const rc=JSON.parse(localStorage.getItem("recent")||"[]");if(rc.length){M.insertAdjacentHTML("beforeend",'<div class="h" style="padding-left:0">Continue reading</div>');M.append(ul(rc.map(x=>frow({path:x},1))))}
   M.insertAdjacentHTML("beforeend",'<div class="h" style="padding-left:0">All folders</div>')}
  const kids=dirsOf(list,p).map(([d,n])=>drow(d,n)),fl=list.filter(f=>par(f.path)===p).sort(byName).map(f=>frow(f));
@@ -150,11 +154,12 @@ function closeV(){$("viewer").classList.remove("on");$("vf").src="about:blank"}
 $("close").onclick=()=>{play("back");closeV()};
 
 let tm;$("q").addEventListener("input",e=>{clearTimeout(tm);const v=e.target.value.trim().toLowerCase();play("tick");if(!v){main();return}
- tm=setTimeout(()=>{const w=v.split(/\s+/),M=$("main");const hit=files.filter(f=>{const s=SUBJ.find(j=>j.id===f.s);return w.every(x=>(f.path+" "+(s?s.name:"")).toLowerCase().includes(x))}).slice(0,80);
+ tm=setTimeout(()=>{const w=v.split(/\s+/),M=$("main");const hit=vis().filter(f=>{const s=SUBJ.find(j=>j.id===f.s);return w.every(x=>(f.path+" "+(s?s.name:"")).toLowerCase().includes(x))}).slice(0,80);
   M.innerHTML="";M.append(Object.assign(document.createElement("div"),{className:"crumbs",textContent:"Search results"}));M.append(hit.length?ul(hit.map(f=>frow(f,1))):msg("No match. Try fewer words."))},250)});
 
 $("main").append(msg("Loading your library..."));
-load().then(render).catch(()=>{$("main").innerHTML="";$("main").append(msg("Could not load files. Check your internet and refresh."))});
+load().then(()=>{eds=[...new Set(files.map(f=>f.path.split("/")[0]).filter(x=>/^ENG_SUB_/.test(x)))].sort(NC.compare).reverse();
+ const sv=localStorage.getItem("ed");ed=sv&&(sv==="all"||eds.includes(sv))?sv:(eds[0]||"all");edLabel();render()}).catch(()=>{$("main").innerHTML="";$("main").append(msg("Could not load files. Check your internet and refresh."))});
 </script>
 </body>
 </html>
