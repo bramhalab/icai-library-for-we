@@ -90,7 +90,7 @@ $("mute").onclick=()=>{muted=!muted;localStorage.setItem("mute",muted?"1":"0");s
 
 /* data */
 const clean=s=>s.replace(/[_\-\/().]/g," ");
-const subjOf=p=>{for(const s of p.split("/").reverse()){const m=SUBJ.find(j=>j.re.test(clean(s)));if(m)return m.id}return"other"};
+const subjOf=p=>{for(const s of p.split("/")){const m=SUBJ.find(j=>j.re.test(clean(s)));if(m)return m.id}return"other"};
 async function load(){let url=API+"?recursive=true&limit=1000",out=[];
  while(url){const r=await fetch(url);if(!r.ok)throw 0;out=out.concat(await r.json());const m=(r.headers.get("link")||"").match(/<([^>]+)>;\s*rel="next"/);url=m?m[1]:null}
  files=out.filter(x=>x.type==="file"&&/\.pdf$/i.test(x.path)&&!/ignore|ingnore/i.test(x.path)).map(x=>({...x,s:subjOf(x.path)}));
