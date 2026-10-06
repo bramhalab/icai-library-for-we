@@ -74,7 +74,7 @@ const SUBJ=[{id:"acc",p:"Paper 1",name:"Accounting",re:/\b(accounting|accounts?|
  {id:"law",p:"Paper 2",name:"Business Laws",re:/\b(business laws?|laws?)\b/i},
  {id:"qa",p:"Paper 3",name:"Quantitative Aptitude",re:/\b(quantitative|aptitude|qa|maths?|mathematics|stats?|statistics|lr|logical)\b/i},
  {id:"eco",p:"Paper 4",name:"Business Economics",re:/\b(economics|eco|bck|commercial)\b/i}];
-let files=[],ch={},cnt={},exp=new Set(),cur={t:"d",v:""};
+let files=[],ch={},cnt={},exp=new Set(),cur={t:"d",id:"",p:""};
 
 /* sound */
 let ac,muted=localStorage.getItem("mute")==="1";
@@ -104,38 +104,43 @@ const ul=items=>{const u=document.createElement("ul");items.forEach(i=>u.append(
 function node(label,depth,on,tg,onTg,onGo){const d=document.createElement("div");d.className="node"+(on?" on":"");d.tabIndex=0;d.style.paddingLeft=(10+depth*14)+"px";
  d.innerHTML='<span class="tg">'+tg+'</span><span class="nm"></span>';d.querySelector(".nm").textContent=label;
  d.querySelector(".tg").onclick=e=>{e.stopPropagation();onTg&&onTg()};d.onclick=onGo;d.onkeydown=e=>e.key==="Enter"&&onGo();return d}
+const sc=()=>cur.t==="s"?files.filter(f=>f.s===cur.id):files;
+function dirsOf(list,p){const o={},pre=p?p+"/":"";list.forEach(f=>{if(!f.path.startsWith(pre))return;const r=f.path.slice(pre.length).split("/");if(r.length>1)o[r[0]]=(o[r[0]]||0)+1});return Object.keys(o).sort(NC.compare).map(n=>[pre+n,o[n]])}
+const subOf=()=>cur.t==="s"?SUBJ.find(j=>j.id===cur.id):null;
 function side(){const S=$("side");S.innerHTML='<div class="h">Subjects</div>';
- SUBJ.forEach(s=>S.append(node(s.name,0,cur.t==="s"&&cur.v===s.id,"&#9679;",null,()=>go("s",s.id,"subj"))));
- S.insertAdjacentHTML("beforeend",'<div class="h">Folders</div>');
- const walk=(p,dp)=>(ch[p]||[]).forEach(d=>{const has=(ch[d]||[]).length,open=exp.has(d);
-  S.append(node(base(d),dp,cur.t==="d"&&cur.v===d,has?(open?"&#9662;":"&#9656;"):"",()=>{open?exp.delete(d):exp.add(d);play("tick");side()},()=>{exp.add(d);go("d",d,"dir")}));if(open)walk(d,dp+1)});
+ SUBJ.forEach(s=>S.append(node(s.name,0,cur.t==="s"&&cur.id===s.id&&!cur.p,"&#9679;",null,()=>go("s",s.id,"","subj"))));
+ const sub=subOf();S.insertAdjacentHTML("beforeend",'<div class="h"></div>');S.lastChild.textContent=sub?sub.name+" folders":"Folders";
+ const list=sc(),key=(cur.t==="s"?"s"+cur.id:"d")+"|";
+ const walk=(p,dp)=>dirsOf(list,p).forEach(([d])=>{const has=dirsOf(list,d).length,open=exp.has(key+d);
+  S.append(node(base(d),dp,cur.p===d,has?(open?"&#9662;":"&#9656;"):"",()=>{open?exp.delete(key+d):exp.add(key+d);play("tick");side()},()=>{exp.add(key+d);go(cur.t,cur.id,d,"dir")}));if(open)walk(d,dp+1)});
  walk("",0)}
 
 /* main */
 function frow(x,sp){const li=document.createElement("li");li.tabIndex=0;li.innerHTML='<span>&#128196;</span><span class="n"></span><span class="m">'+size(x.size)+"</span>";
- const n=li.querySelector(".n");n.textContent=base(x.path);if(sp){const s=document.createElement("small");s.textContent=par(x.path).split("/").slice(1).join(" / ")||par(x.path);n.append(s)}
+ const n=li.querySelector(".n");n.textContent=base(x.path);if(sp){const s=document.createElement("small");s.textContent=par(x.path);n.append(s)}
  const g=()=>openFile(x.path);li.onclick=g;li.onkeydown=e=>e.key==="Enter"&&g();return li}
-function drow(d){const li=document.createElement("li");li.tabIndex=0;li.innerHTML='<span>&#128193;</span><span class="n"></span><span class="m">'+cnt[d]+" files</span>";li.querySelector(".n").textContent=base(d);
- const g=()=>{exp.add(d);go("d",d,"dir")};li.onclick=g;li.onkeydown=e=>e.key==="Enter"&&g();return li}
-function crumbs(parts){const c=document.createElement("div");c.className="crumbs";const h=document.createElement("a");h.textContent="Library";h.onclick=()=>go("d","","back");c.append(h);
- parts.forEach(([t,v])=>{c.append(" / ");if(v!=null){const a=document.createElement("a");a.textContent=t;a.onclick=()=>go("d",v,"back");c.append(a)}else c.append(t)});return c}
+function drow(d,n){const li=document.createElement("li");li.tabIndex=0;li.innerHTML='<span>&#128193;</span><span class="n"></span><span class="m">'+n+" files</span>";li.querySelector(".n").textContent=base(d);
+ const g=()=>{exp.add((cur.t==="s"?"s"+cur.id:"d")+"|"+d);go(cur.t,cur.id,d,"dir")};li.onclick=g;li.onkeydown=e=>e.key==="Enter"&&g();return li}
+function crumbs(){const c=document.createElement("div");c.className="crumbs";
+ const add=(t,fn)=>{if(c.childNodes.length)c.append(" / ");if(fn){const a=document.createElement("a");a.textContent=t;a.onclick=fn;c.append(a)}else c.append(t)};
+ add("Library",()=>go("d","","","back"));const sub=subOf(),parts=cur.p?cur.p.split("/"):[];
+ if(sub)add(sub.name,parts.length?()=>go("s",cur.id,"","back"):null);
+ parts.forEach((t,i)=>add(t,i<parts.length-1?()=>go(cur.t,cur.id,parts.slice(0,i+1).join("/"),"back"):null));return c}
 const byName=(a,b)=>NC.compare(a.path,b.path);
-function main(){const M=$("main");M.innerHTML="";M.scrollTop=0;
- if(cur.t==="s"){const s=SUBJ.find(j=>j.id===cur.v);M.append(crumbs([[s?s.name:"Other"]]));const l=files.filter(f=>f.s===cur.v).sort(byName);
-  M.append(l.length?ul(l.map(f=>frow(f,1))):msg("No PDFs found for this subject yet."));return}
- const p=cur.v,parts=p?p.split("/"):[];M.append(crumbs(parts.map((t,i)=>[t,i<parts.length-1?parts.slice(0,i+1).join("/"):null])));
- if(!p){const g=document.createElement("div");g.className="subs";SUBJ.forEach(s=>{const b=document.createElement("button");b.className="sub";
-   b.innerHTML='<span class="p">'+s.p+"</span><h2>"+s.name+'</h2><span class="mono">'+files.filter(f=>f.s===s.id).length+" PDFs</span>";b.onclick=()=>go("s",s.id,"subj");g.append(b)});M.append(g);
+function main(){const M=$("main");M.innerHTML="";M.scrollTop=0;const list=sc(),p=cur.p;M.append(crumbs());
+ if(cur.t==="d"&&!p){const g=document.createElement("div");g.className="subs";SUBJ.forEach(s=>{const b=document.createElement("button");b.className="sub";
+   b.innerHTML='<span class="p">'+s.p+"</span><h2>"+s.name+'</h2><span class="mono">'+files.filter(f=>f.s===s.id).length+" PDFs</span>";b.onclick=()=>go("s",s.id,"","subj");g.append(b)});M.append(g);
   const rc=JSON.parse(localStorage.getItem("recent")||"[]");if(rc.length){M.insertAdjacentHTML("beforeend",'<div class="h" style="padding-left:0">Continue reading</div>');M.append(ul(rc.map(x=>frow({path:x},1))))}
   M.insertAdjacentHTML("beforeend",'<div class="h" style="padding-left:0">All folders</div>')}
- const kids=(ch[p]||[]).map(drow),fl=files.filter(f=>par(f.path)===p).sort(byName).map(f=>frow(f));
- M.append(kids.length+fl.length?ul(kids.concat(fl)):msg("Empty folder."))}
+ const kids=dirsOf(list,p).map(([d,n])=>drow(d,n)),fl=list.filter(f=>par(f.path)===p).sort(byName).map(f=>frow(f));
+ M.append(kids.length+fl.length?ul(kids.concat(fl)):msg("No files here yet."))}
 
-/* nav */
-function render(){const h=decodeURIComponent(location.hash.slice(1)),i=h.indexOf(":");cur=i>0?{t:h.slice(0,i),v:h.slice(i+1)}:{t:"d",v:""};
- if(cur.t==="d"&&cur.v){const a=cur.v.split("/");for(let k=1;k<a.length;k++)exp.add(a.slice(0,k).join("/"))}
+/* nav: hash is d:path  or  s:subjectId|path */
+function render(){const h=decodeURIComponent(location.hash.slice(1)),i=h.indexOf(":");let t="d",id="",p="";
+ if(i>0){t=h.slice(0,i)==="s"?"s":"d";const r=h.slice(i+1);if(t==="s"){const j=r.indexOf("|");id=j<0?r:r.slice(0,j);p=j<0?"":r.slice(j+1)}else p=r}
+ cur={t,id,p};const key=(t==="s"?"s"+id:"d")+"|",a=p?p.split("/"):[];for(let k=1;k<a.length;k++)exp.add(key+a.slice(0,k).join("/"));
  $("q").value="";$("side").classList.remove("open");side();main()}
-function go(t,v,s){play(s);const nh=t+":"+v;if(location.hash.slice(1)===enc(nh)||(!location.hash&&t==="d"&&!v))render();else location.hash=enc(nh)}
+function go(t,id,p,s){play(s);const nh=t==="s"?"s:"+id+"|"+p:"d:"+p;if(location.hash.slice(1)===enc(nh)||(!location.hash&&t==="d"&&!p))render();else location.hash=enc(nh)}
 addEventListener("hashchange",()=>{closeV();render()});
 $("fbtn").onclick=()=>{play("tick");$("side").classList.toggle("open")};
 
@@ -146,7 +151,7 @@ $("close").onclick=()=>{play("back");closeV()};
 
 let tm;$("q").addEventListener("input",e=>{clearTimeout(tm);const v=e.target.value.trim().toLowerCase();play("tick");if(!v){main();return}
  tm=setTimeout(()=>{const w=v.split(/\s+/),M=$("main");const hit=files.filter(f=>{const s=SUBJ.find(j=>j.id===f.s);return w.every(x=>(f.path+" "+(s?s.name:"")).toLowerCase().includes(x))}).slice(0,80);
-  M.innerHTML="";M.append(crumbs([["Search results"]]));M.append(hit.length?ul(hit.map(f=>frow(f,1))):msg("No match. Try fewer words."))},250)});
+  M.innerHTML="";M.append(Object.assign(document.createElement("div"),{className:"crumbs",textContent:"Search results"}));M.append(hit.length?ul(hit.map(f=>frow(f,1))):msg("No match. Try fewer words."))},250)});
 
 $("main").append(msg("Loading your library..."));
 load().then(render).catch(()=>{$("main").innerHTML="";$("main").append(msg("Could not load files. Check your internet and refresh."))});
