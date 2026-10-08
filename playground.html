@@ -33,6 +33,30 @@ button{font:inherit;color:inherit;cursor:pointer}
 .kg .sm{font-size:9px;line-height:1.1}.kg .pu{background:#7a1f6e}.kg .p{grid-row:span 2;height:auto}.kg .lt{background:#e5e5e5;color:#222}
 .kg i{display:block}.cap{grid-column:5/7;text-align:center;font:9px system-ui;color:#ccc;align-self:end}
 .tabs button{width:46px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center}.ic{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+
+html,body{max-width:100%;overflow-x:hidden}body{padding:10px 10px 40px}
+.tp{min-width:0}
+#notes{display:block;width:100%;min-height:60vh;font:16px/28px Georgia,serif;padding:0 10px;border:1px solid var(--rule);color:var(--ink);background:var(--card) linear-gradient(transparent 27px,var(--rule) 27px) 0 0/100% 28px local;resize:vertical;outline:none}
+#notes:focus{border-color:var(--acc)}
+#cmd{display:block;width:100%;font-size:16px}
+.acard{min-width:0;padding:0;margin:8px 0;box-shadow:none;border:1px solid var(--rule);overflow:hidden}
+.ah{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;min-height:46px}
+.ah b{flex:1;min-width:0;overflow-wrap:anywhere;font-size:15px}
+.ex{display:flex;transition:transform .15s;color:var(--ledger)}.acard.open .ex{transform:rotate(90deg)}
+.sum{font:12px 'Courier New',monospace;color:var(--soft);white-space:nowrap}
+.rm{width:34px;height:34px;font-size:20px;line-height:1;flex:none}
+.cbody{display:none;padding:0 12px 12px}.acard.open .cbody{display:block}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;margin:0;border:1.5px solid var(--ink)}.two.one{grid-template-columns:minmax(0,1fr)}
+.side{min-width:0;padding:6px 8px}.side+.side{border-left:1.5px solid var(--ink)}
+.sh{margin:0 0 6px}
+.r{display:grid;grid-template-columns:minmax(0,1fr) minmax(64px,34%) 28px;gap:4px;align-items:center;margin-bottom:4px}
+.r input{width:100%;min-width:0;font-size:15px;padding:7px 6px}.r .am{text-align:right}
+.rx{width:28px;height:30px;padding:0;font-size:18px;color:var(--soft);background:transparent;border:0}
+.add{min-height:34px}
+.tot{display:flex;justify-content:space-between;margin-top:6px;font-weight:700}.tot::before{content:"Total";font-weight:400;color:var(--soft)}
+.chk{margin-top:8px}
+@media(max-width:620px){.two{grid-template-columns:minmax(0,1fr)}.side+.side{border-left:0;border-top:1.5px solid var(--ink)}}
+@media(pointer:coarse){input,textarea{font-size:16px!important}.r input{padding:9px 6px}}
 </style></head><body><div id="pg"></div>
 <script>
 const $=id=>document.getElementById(id);
@@ -103,17 +127,22 @@ function pgInit(){if(pgBuilt)return;pgBuilt=true;
  $("chp").onclick=e=>{const n=e.target.dataset.n;if(n){addCard(D.find(d=>d.n===n));$("cmd").value="";chips([])}};
  $("tc").onclick=e=>{const k=e.target.closest("button[data-k]");if(k){play("tick");press(k.dataset.k)}};cshow()}
 function addCard(d){const [a,b]=d.lab.split("|"),lab=(t,s)=>t.startsWith("~")?t.slice(1):(s?"By ":"To ")+t;
- pgS.cards.unshift({n:d.n,a,b,l:d.l.map(t=>[lab(t,0),""]),r:d.r?d.r.map(t=>[lab(t,1),""]):null,note:d.note});pgSave();renderCards();play("dir")}
+ pgS.cards.forEach(c=>c.open=false);pgS.cards.unshift({open:true,n:d.n,a,b,l:d.l.map(t=>[lab(t,0),""]),r:d.r?d.r.map(t=>[lab(t,1),""]):null,note:d.note});pgSave();renderCards();play("dir")}
 function upT(d,c){const S=x=>x.reduce((a,r)=>a+(parseFloat(String(r[1]).replace(/,/g,""))||0),0),f=n=>n.toLocaleString("en-IN",{maximumFractionDigits:2});
- const tl=S(c.l),T=d.querySelectorAll(".tot");T[0].textContent="Total: "+f(tl);
- if(c.r){const tr=S(c.r),ok=Math.abs(tl-tr)<.005&&tl>0,x=d.querySelector(".chk");T[1].textContent="Total: "+f(tr);x.textContent=ok?"\u2713 Both sides tally":"Difference: "+f(Math.abs(tl-tr));x.className="chk"+(ok?" ok":"")}}
+ const tl=S(c.l),T=d.querySelectorAll(".tot");T[0].textContent=f(tl);let sum=f(tl),any=tl>0;
+ if(c.r){const tr=S(c.r),ok=Math.abs(tl-tr)<.005&&tl>0,x=d.querySelector(".chk");T[1].textContent=f(tr);any=any||tr>0;
+  x.textContent=ok?"\u2713 Both sides tally":(tl||tr?"Difference: "+f(Math.abs(tl-tr)):"");x.className="chk"+(ok?" ok":"");sum=f(tl)+"  |  "+f(tr)+(ok?"  \u2713":"")}
+ d.querySelector(".sum").textContent=any?sum:""}
 function rowEl(arr,i,d,c){const r=document.createElement("div");r.className="r";
- r.innerHTML='<input class="lb" placeholder="Particulars"><input class="am" inputmode="decimal" placeholder="Amount"><button title="Remove row">\u2212</button>';
+ r.innerHTML='<input class="lb" placeholder="Particulars" aria-label="Particulars"><input class="am" inputmode="decimal" placeholder="Amount" aria-label="Amount"><button class="rx" title="Remove row" aria-label="Remove row">\u00d7</button>';
  const [lb,am,x]=r.children;lb.value=arr[i][0];am.value=arr[i][1];
  lb.oninput=()=>{arr[i][0]=lb.value;pgSave()};am.oninput=()=>{arr[i][1]=am.value;pgSave();upT(d,c)};x.onclick=()=>{arr.splice(i,1);pgSave();renderCards()};return r}
-function renderCards(){const C=$("cards");C.innerHTML="";pgS.cards.forEach((c,ci)=>{const d=document.createElement("div");d.className="acard";
- d.innerHTML='<div class="ah"><b></b><button title="Remove format">\u00d7</button></div><div class="two"></div><div class="chk"></div><details><summary>Format tip</summary><p></p></details>';
- d.querySelector("b").textContent=c.n;d.querySelector("p").textContent=c.note||"";d.querySelector(".ah button").onclick=()=>{pgS.cards.splice(ci,1);pgSave();renderCards()};
+function renderCards(){const C=$("cards");C.innerHTML="";pgS.cards.forEach((c,ci)=>{const d=document.createElement("div");d.className="acard"+(c.open?" open":"");
+ d.innerHTML='<div class="ah"><span class="ex"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span><b></b><span class="sum"></span><button class="rm" title="Remove this format" aria-label="Remove this format">\u00d7</button></div>'+
+  '<div class="cbody"><div class="two"></div><div class="chk"></div><details><summary>Format tip</summary><p></p></details></div>';
+ const head=d.querySelector(".ah");head.querySelector("b").textContent=c.n;d.querySelector("p").textContent=c.note||"";
+ head.onclick=e=>{if(e.target.closest(".rm"))return;c.open=!c.open;d.classList.toggle("open",c.open);pgSave()};
+ head.querySelector(".rm").onclick=()=>{pgS.cards.splice(ci,1);pgSave();renderCards()};
  const two=d.querySelector(".two");if(!c.r){two.classList.add("one");d.querySelector(".chk").remove()}
  [["l",c.r?c.a:"Particulars"]].concat(c.r?[["r",c.b]]:[]).forEach(([k,h])=>{const col=document.createElement("div");col.className="side";
   col.innerHTML='<div class="sh"></div><div class="rows"></div><button class="add">+ row</button><div class="tot"></div>';col.querySelector(".sh").textContent=h;
