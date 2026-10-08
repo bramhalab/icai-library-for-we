@@ -66,16 +66,17 @@ iframe{flex:1;border:0;width:100%;background:#fff}
 #pg{border:0;width:100%;height:100%;background:var(--paper);border-left:3px double var(--ledger);min-height:0}
 .m-pdf #pg{display:none}.m-work #vf{display:none}.m-split #stage{grid-template-columns:1fr 1fr}
 @media(max-width:900px){.m-split #stage{grid-template-columns:1fr;grid-template-rows:1fr 1fr}#pg{border-left:0;border-top:3px double var(--ledger)}}
+.pill{display:inline-flex;align-items:center;gap:5px}.ic{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;pointer-events:none}.ri{display:flex;color:var(--acc)}.btn .ic{width:20px;height:20px}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="brand">CA Foundation Library<small>ICAI study material</small></div>
-  <div class="top"><button class="pill" id="fbtn">Folders</button><input id="q" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="lw" title="Load a saved .work.json">Load work</button><input type="file" id="lwf" accept=".json,application/json" hidden><button class="pill" id="ed" title="Study material edition">Edition</button><button class="pill" id="mute">Sound on</button></div>
+  <div class="top"><button class="pill" id="fbtn" title="Folders" aria-label="Folders"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><input id="q" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="lw" title="Load saved work (.json)" aria-label="Load saved work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lwf" accept=".json,application/json" hidden><button class="pill" id="ed" title="Study material edition (click to change)" aria-label="Edition"></button><button class="pill" id="mute" title="Sound on / off" aria-label="Sound"></button></div>
   <nav id="side" aria-label="Folders"></nav>
   <main id="main"></main>
 </div>
-<div id="viewer" class="m-pdf"><div id="bar"><button class="btn" id="close">Back</button><b id="vt"></b><a class="btn" id="vo" target="_blank" rel="noopener">New tab</a></div><div id="stage"><iframe id="vf" title="PDF reader"></iframe></div></div>
+<div id="viewer" class="m-pdf"><div id="bar"><button class="btn" id="close" title="Back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><b id="vt"></b><a class="btn" id="vo" target="_blank" rel="noopener" title="Open PDF in new tab" aria-label="Open in new tab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a></div><div id="stage"><iframe id="vf" title="PDF reader"></iframe></div></div>
 <script>
 const REPO="Brand1809/ICAI_SM_CFA",API="https://huggingface.co/api/datasets/"+REPO+"/tree/main",RAW="https://huggingface.co/datasets/"+REPO+"/resolve/main/";
 const $=id=>document.getElementById(id),enc=p=>p.split("/").map(encodeURIComponent).join("/"),base=p=>p.split("/").pop(),par=p=>p.split("/").slice(0,-1).join("/");
@@ -84,6 +85,7 @@ const SUBJ=[{id:"acc",p:"Paper 1",name:"Accounting",re:/\b(accounting|accounts?|
  {id:"law",p:"Paper 2",name:"Business Laws",re:/\b(business laws?|laws?)\b/i},
  {id:"qa",p:"Paper 3",name:"Quantitative Aptitude",re:/\b(quantitative|aptitude|qa|maths?|mathematics|stats?|statistics|lr|logical)\b/i},
  {id:"eco",p:"Paper 4",name:"Business Economics",re:/\b(economics|eco|bck|commercial)\b/i}];
+const IC={folder:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',file:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>',up:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg>',layers:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>',snd:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>',mute:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>',back:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',ext:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',menu:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'};
 let files=[],ch={},cnt={},exp=new Set(),cur={t:"d",id:"",p:""};
 
 /* sound */
@@ -95,7 +97,7 @@ function swish(a,b,d=.22,v=.5){const c=A(),n=Math.floor(c.sampleRate*d),bf=c.cre
 const SND={dir:()=>swish(500,2600),back:()=>swish(2600,500),subj:()=>{note(120,0,.25,"sine",.7);note(70,.02,.3,"sine",.7);swish(900,300,.1,.3)},
  file:()=>{note(660,0,.25,"triangle");note(880,.09,.25,"triangle");note(1320,.18,.4,"triangle",.2)},tick:()=>note(1800,0,.04,"square",.06)};
 const play=k=>{if(!muted)try{SND[k]()}catch(e){}};
-const setMute=()=>$("mute").textContent=muted?"Sound off":"Sound on";
+const setMute=()=>$("mute").innerHTML=muted?IC.mute:IC.snd;
 $("mute").onclick=()=>{muted=!muted;localStorage.setItem("mute",muted?"1":"0");setMute();play("file")};setMute();
 
 /* data */
@@ -116,7 +118,7 @@ function node(label,depth,on,tg,onTg,onGo){const d=document.createElement("div")
  d.querySelector(".tg").onclick=e=>{e.stopPropagation();onTg&&onTg()};d.onclick=onGo;d.onkeydown=e=>e.key==="Enter"&&onGo();return d}
 let eds=[],ed="all";
 const vis=()=>ed==="all"?files:files.filter(f=>{const t=f.path.split("/")[0];return !/^ENG_SUB_/.test(t)||t===ed});
-const edLabel=()=>$("ed").textContent="Edition: "+(ed==="all"?"All":ed.replace("ENG_SUB_",""));
+const edLabel=()=>$("ed").innerHTML=IC.layers+"<span>"+(ed==="all"?"All":ed.replace("ENG_SUB_",""))+"</span>";
 $("ed").onclick=()=>{const o=eds.concat("all");ed=o[(o.indexOf(ed)+1)%o.length];localStorage.setItem("ed",ed);edLabel();play("subj");render()};
 const sc=()=>cur.t==="s"?vis().filter(f=>f.s===cur.id):vis();
 function dirsOf(list,p){const o={},pre=p?p+"/":"";list.forEach(f=>{if(!f.path.startsWith(pre))return;const r=f.path.slice(pre.length).split("/");if(r.length>1)o[r[0]]=(o[r[0]]||0)+1});return Object.keys(o).sort(NC.compare).map(n=>[pre+n,o[n]])}
@@ -129,10 +131,10 @@ function side(){const S=$("side");S.innerHTML="";
  walk("",0)}
 
 /* main */
-function frow(x,sp){const li=document.createElement("li");li.tabIndex=0;li.innerHTML='<span>&#128196;</span><span class="n"></span><span class="m">'+size(x.size)+"</span>";
+function frow(x,sp){const li=document.createElement("li");li.tabIndex=0;li.innerHTML='<span class="ri">'+IC.file+'</span><span class="n"></span><span class="m">'+size(x.size)+"</span>";
  const n=li.querySelector(".n");n.textContent=base(x.path);if(sp){const s=document.createElement("small");s.textContent=par(x.path);n.append(s)}
  const g=()=>openFile(x.path);li.onclick=g;li.onkeydown=e=>e.key==="Enter"&&g();return li}
-function drow(d,n){const li=document.createElement("li");li.tabIndex=0;li.innerHTML='<span>&#128193;</span><span class="n"></span><span class="m">'+n+" files</span>";li.querySelector(".n").textContent=base(d);
+function drow(d,n){const li=document.createElement("li");li.tabIndex=0;li.innerHTML='<span class="ri">'+IC.folder+'</span><span class="n"></span><span class="m">'+n+" files</span>";li.querySelector(".n").textContent=base(d);
  const g=()=>{exp.add((cur.t==="s"?"s"+cur.id:"d")+"|"+d);go(cur.t,cur.id,d,"dir")};li.onclick=g;li.onkeydown=e=>e.key==="Enter"&&g();return li}
 function crumbs(){const c=document.createElement("div");c.className="crumbs";
  const add=(t,fn)=>{if(c.childNodes.length)c.append(" / ");if(fn){const a=document.createElement("a");a.textContent=t;a.onclick=fn;c.append(a)}else c.append(t)};
