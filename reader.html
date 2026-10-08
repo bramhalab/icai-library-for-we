@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF Reader</title>
+<style>
+:root{--paper:#F3EEE2;--dark:#DCD3BC;--ink:#1E2A38;--soft:#4A5568;--ledger:#8C6B3F;--acc:#1E4D6B;--rule:#C9BEA0;--card:#FBF8F0}
+@media (prefers-color-scheme:dark){:root{--paper:#1b1f26;--dark:#12161b;--ink:#ece6d6;--soft:#a9b0bb;--ledger:#d2a869;--acc:#7fb8d9;--rule:#3a424e;--card:#222831}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{height:100%;margin:0}body{display:flex;flex-direction:column;background:var(--paper);color:var(--ink);font:15px/1.4 Georgia,serif}
+button{font:inherit;color:inherit;cursor:pointer}
+#top{display:flex;gap:10px;align-items:center;overflow-x:auto;padding:6px 10px;border-bottom:3px double var(--ledger);background:var(--card);flex:none}
+.g{display:flex;gap:4px;align-items:center;flex:none}.g+.g{border-left:1px solid var(--rule);padding-left:10px}
+#top button{background:var(--paper);border:1.5px solid var(--rule);padding:5px 10px;font:13px Palatino,Georgia,serif;white-space:nowrap}
+#top button.on{border-color:var(--acc);background:var(--acc);color:var(--paper)}
+.dot{width:22px;height:22px;border-radius:50%;padding:0!important;border:2px solid var(--rule)!important}.dot.on{border:3px solid var(--ink)!important;background:inherit}
+#body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr)}
+#body.has-side{grid-template-columns:minmax(0,1fr) minmax(340px,44%)}
+@media(max-width:900px){#body.has-side{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) minmax(0,1fr)}}
+#pages{overflow:auto;background:var(--dark);position:relative;padding:10px 0;-webkit-overflow-scrolling:touch}
+.page{position:relative;background:#fff;margin:0 auto 12px;box-shadow:0 2px 6px #0005}
+.page canvas{position:absolute;left:0;top:0}.ov{pointer-events:none}
+#pages.draw .ov{pointer-events:auto;touch-action:none;cursor:crosshair}
+.tl{position:absolute;inset:0;overflow:hidden;line-height:1;opacity:1}
+.tl span,.tl br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0 0}
+.tl ::selection{background:rgba(30,110,255,.35)}
+#pages.draw .tl{pointer-events:none}
+.msg{padding:30px;text-align:center;color:var(--soft)}
+#side{display:flex;flex-direction:column;min-height:0;border-left:3px double var(--ledger);background:var(--paper)}
+#qbar{display:flex;gap:6px;padding:6px 8px;border-bottom:1px solid var(--rule);flex-wrap:wrap;flex:none}
+#chips{display:contents}#qbar button,#qhead button{background:var(--card);border:1.5px solid var(--rule);padding:3px 10px;font:13px Georgia,serif;border-radius:14px}
+#qbar button.on{border-color:var(--acc);background:var(--acc);color:var(--paper)}
+#qhead{display:flex;gap:6px;padding:6px 8px;flex:none}#qlab{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--rule);padding:4px 8px}
+#qimg{flex:none;max-height:34%;overflow:auto;background:#fff;border-bottom:3px double var(--ledger)}#qimg img{display:block;width:100%}
+#wk{flex:1;min-height:0;border:0;width:100%}#qnone{padding:24px;color:var(--soft);text-align:center}
+</style></head><body>
+<div id="top">
+ <div class="g" id="tools"><button data-t="sel" class="on">Text</button><button data-t="hl">Highlight</button><button data-t="pen">Pen</button><button data-t="mk">Marker</button><button data-t="er">Eraser</button><button data-t="q">Question</button></div>
+ <div class="g" id="cols"></div>
+ <div class="g" id="sizes"><button data-w=".0025">S</button><button data-w=".005" class="on">M</button><button data-w=".01">L</button></div>
+ <div class="g"><button id="undo">Undo</button><button id="zo">&minus;</button><button id="zi">+</button></div>
+ <div class="g"><button id="save">Save work</button><button id="load">Load work</button><input type="file" id="lf" accept=".json,application/json" hidden><button id="ptog">Practice</button></div>
+</div>
+<div id="body"><div id="pages"><div class="msg">PDF load ho raha hai ...</div></div>
+ <aside id="side" hidden>
+  <div id="qbar"><span id="chips"></span></div>
+  <div id="qhead" hidden><input id="qlab" aria-label="Question name"><button id="qdel">Delete</button></div>
+  <div id="qimg" hidden></div><iframe id="wk" title="Practice workspace" hidden></iframe>
+  <div id="qnone">Upar <b>Question</b> tool chuno, phir PDF mein question ke upar rectangle kheencho. Uska practice workspace yahan khulega.</div>
+ </aside></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+const RAW="https://huggingface.co/datasets/Brand1809/ICAI_SM_CFA/resolve/main/",WORKER="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const $=id=>document.getElementById(id),enc=p=>p.split("/").map(encodeURIComponent).join("/"),base=p=>p.split("/").pop();
+const path=decodeURIComponent(location.hash.slice(1));
+const S={ann:[],qs:[],hist:[],cur:null},COLORS=["#f7d417","#5fd35f","#ff7eb6","#4aa8ff","#e0352b","#111111"];
+let pdf=null,pages=[],Z=1,tool="sel",color=COLORS[0],lw=.005,obs=null,down=false,hlT=0;
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const persist=()=>lsSet("rd:"+path,{ann:S.ann,qs:S.qs.map(q=>({id:q.id,p:q.p,r:q.r,label:q.label}))});
+const pagesEl=$("pages");
+
+/* ---------- toolbar ---------- */
+document.querySelectorAll("#tools button").forEach(b=>b.onclick=()=>{tool=b.dataset.t;document.querySelectorAll("#tools button").forEach(x=>x.classList.toggle("on",x===b));
+ pagesEl.className=/^(pen|mk|er|q)$/.test(tool)?"draw":"";if(tool!=="hl"&&getSelection)getSelection().removeAllRanges()});
+COLORS.forEach((c,i)=>{const b=document.createElement("button");b.className="dot"+(i?"":" on");b.style.background=c;b.title=c;b.onclick=()=>{color=c;document.querySelectorAll(".dot").forEach(x=>x.classList.toggle("on",x===b))};$("cols").append(b)});
+document.querySelectorAll("#sizes button").forEach(b=>b.onclick=()=>{lw=+b.dataset.w;document.querySelectorAll("#sizes button").forEach(x=>x.classList.toggle("on",x===b))});
+$("undo").onclick=()=>undo();addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="z"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undo()}});
+$("zi").onclick=()=>zoom(1.2);$("zo").onclick=()=>zoom(1/1.2);
+$("ptog").onclick=()=>showSide($("side").hidden);
+function showSide(on){$("side").hidden=!on;$("body").classList.toggle("has-side",on);$("ptog").classList.toggle("on",on)}
+
+/* ---------- drawing ---------- */
+function qbox(x,W,H,r,label,on){x.save();x.strokeStyle=on?"#1E4D6B":"#8C6B3F";x.fillStyle=on?"rgba(30,77,107,.08)":"rgba(140,107,63,.06)";x.lineWidth=2;x.setLineDash([7,4]);
+ x.fillRect(r[0]*W,r[1]*H,r[2]*W,r[3]*H);x.strokeRect(r[0]*W,r[1]*H,r[2]*W,r[3]*H);x.setLineDash([]);
+ if(label){x.font="bold 12px Georgia";const w=x.measureText(label).width+10;x.fillStyle=x.strokeStyle;x.fillRect(r[0]*W,r[1]*H-17,w,17);x.fillStyle="#fff";x.fillText(label,r[0]*W+5,r[1]*H-5)}x.restore()}
+function drawOv(pg,cur){if(!pg.done)return;const x=pg.ov.getContext("2d"),W=pg.W,H=pg.H;x.setTransform(pg.dpr,0,0,pg.dpr,0,0);x.clearRect(0,0,W,H);
+ const items=S.ann.filter(a=>a.p===pg.n);if(cur&&cur.p===pg.n&&cur.pts)items.push(cur);
+ items.forEach(a=>{if(a.t==="hl"){x.fillStyle=a.c;x.globalAlpha=.35;a.r.forEach(r=>x.fillRect(r[0]*W,r[1]*H,r[2]*W,r[3]*H))}
+  else{x.strokeStyle=a.c;x.lineWidth=a.w*W*(a.t==="mk"?4:1);x.globalAlpha=a.t==="mk"?.35:1;x.lineCap="round";x.lineJoin="round";x.beginPath();
+   a.pts.forEach((p,i)=>i?x.lineTo(p[0]*W,p[1]*H):x.moveTo(p[0]*W,p[1]*H));if(a.pts.length===1)x.lineTo(a.pts[0][0]*W+.1,a.pts[0][1]*H);x.stroke()}x.globalAlpha=1});
+ S.qs.filter(q=>q.p===pg.n).forEach(q=>qbox(x,W,H,q.r,q.label,q.id===S.cur));
+ if(cur&&cur.q&&cur.p===pg.n)qbox(x,W,H,[Math.min(cur.x0,cur.x),Math.min(cur.y0,cur.y),Math.abs(cur.x-cur.x0),Math.abs(cur.y-cur.y0)],"",true)}
+const redrawAll=()=>pages.forEach(p=>drawOv(p));
+function eraseAt(pg,x,y){const rx=8/pg.W,ry=8/pg.H;let hit=false;
+ S.ann=S.ann.filter(a=>{if(a.p!==pg.n)return true;const m=a.t==="mk"?2:1;
+  const h=a.t==="hl"?a.r.some(r=>x>=r[0]&&x<=r[0]+r[2]&&y>=r[1]&&y<=r[1]+r[3]):a.pts.some(p=>Math.abs(p[0]-x)<rx*m&&Math.abs(p[1]-y)<ry*m);
+  if(h){S.hist.push(["del",a]);hit=true}return !h});if(hit){drawOv(pg);persist()}}
+function bindOv(pg){const o=pg.ov;let cur=null;const pt=e=>{const b=o.getBoundingClientRect();return[(e.clientX-b.left)/b.width,(e.clientY-b.top)/b.height]};
+ o.onpointerdown=e=>{if(!/^(pen|mk|er|q)$/.test(tool))return;e.preventDefault();try{o.setPointerCapture(e.pointerId)}catch(_){}const [x,y]=pt(e);
+  if(tool==="er"){cur={er:1};eraseAt(pg,x,y)}else if(tool==="q")cur={q:1,p:pg.n,x0:x,y0:y,x,y};else cur={t:tool,p:pg.n,c:color,w:lw,pts:[[x,y]]};drawOv(pg,cur)};
+ o.onpointermove=e=>{if(!cur)return;const [x,y]=pt(e);if(cur.er)eraseAt(pg,x,y);else if(cur.q){cur.x=x;cur.y=y}else cur.pts.push([x,y]);drawOv(pg,cur)};
+ const up=()=>{if(!cur)return;const c=cur;cur=null;
+  if(c.q){const x=Math.min(c.x0,c.x),y=Math.min(c.y0,c.y),w=Math.abs(c.x-c.x0),h=Math.abs(c.y-c.y0);
+   if(w>.03&&h>.015){const n=S.qs.reduce((m,q)=>Math.max(m,+(q.label.match(/^Q(\d+)$/)||[0,0])[1]),0)+1,q={id:"q"+Date.now().toString(36),p:pg.n,r:[x,y,w,h],label:"Q"+n};S.qs.push(q);S.hist.push(["add",q]);persist();openQ(q.id)}}
+  else if(!c.er){S.ann.push(c);S.hist.push(["add",c]);persist()}drawOv(pg)};o.onpointerup=up;o.onpointercancel=up}
+function undo(){const h=S.hist.pop();if(!h)return;const [k,o]=h;
+ if(k==="add"){const i=S.ann.indexOf(o);if(i>=0)S.ann.splice(i,1);else{const j=S.qs.indexOf(o);if(j>=0){S.qs.splice(j,1);if(S.cur===o.id)S.cur=null}}}else S.ann.push(o);
+ redrawAll();persist();renderQs()}
+
+/* text highlight: select text with the Highlight tool, it is applied when you stop selecting */
+addEventListener("pointerdown",()=>down=true,true);addEventListener("pointerup",()=>{down=false;schedHl()},true);
+document.addEventListener("selectionchange",schedHl);
+function schedHl(){if(tool!=="hl")return;clearTimeout(hlT);hlT=setTimeout(()=>{if(!down)doHl()},450)}
+function doHl(){const s=getSelection();if(tool!=="hl"||!s||s.isCollapsed||!s.rangeCount)return;const by={},seen={};
+ [...s.getRangeAt(0).getClientRects()].forEach(r=>{if(r.width<2||r.height<2)return;const k=[r.left,r.top,r.width,r.height].map(Math.round).join();if(seen[k])return;seen[k]=1;
+  const cx=r.left+r.width/2,cy=r.top+r.height/2,pg=pages.find(p=>{const b=p.el.getBoundingClientRect();return cx>=b.left&&cx<=b.right&&cy>=b.top&&cy<=b.bottom});if(!pg)return;
+  const b=pg.el.getBoundingClientRect();(by[pg.n]=by[pg.n]||[]).push([(r.left-b.left)/b.width,(r.top-b.top)/b.height,r.width/b.width,r.height/b.height])});
+ Object.keys(by).forEach(n=>{const o={t:"hl",p:+n,c:color,r:by[n]};S.ann.push(o);S.hist.push(["add",o]);drawOv(pages[n-1])});s.removeAllRanges();persist()}
+
+/* ---------- PDF pages (rendered only while near the screen) ---------- */
+async function renderPage(pg){if(pg.done||pg.busy)return;pg.busy=true;const tok=++pg.tok;
+ try{const page=await pdf.getPage(pg.n),vp=page.getViewport({scale:pg.W/pg.vw}),d=pg.dpr;
+  for(const c of [pg.cv,pg.ov]){c.width=Math.round(pg.W*d);c.height=Math.round(pg.H*d);c.style.width=pg.W+"px";c.style.height=pg.H+"px"}
+  await page.render({canvasContext:pg.cv.getContext("2d"),viewport:vp,transform:[d,0,0,d,0,0]}).promise;if(tok!==pg.tok)return;
+  const tc=await page.getTextContent();if(tok!==pg.tok)return;pg.tl.innerHTML="";pg.tl.style.setProperty("--scale-factor",vp.scale);
+  pdfjsLib.renderTextLayer({textContentSource:tc,textContent:tc,container:pg.tl,viewport:vp,textDivs:[]});pg.done=true;drawOv(pg)}
+ catch(e){console.warn(e)}finally{pg.busy=false}}
+function unrender(pg){pg.tok++;pg.done=false;pg.cv.width=pg.cv.height=pg.ov.width=pg.ov.height=0;pg.tl.innerHTML=""}
+function buildPages(){if(obs)obs.disconnect();pagesEl.innerHTML="";pages=[];const dpr=Math.min(window.devicePixelRatio||1,1.5),Wc=Math.max(260,(pagesEl.clientWidth-24)*Z);
+ obs=new IntersectionObserver(es=>es.forEach(e=>{const pg=e.target._pg;e.isIntersecting?renderPage(pg):unrender(pg)}),{root:pagesEl,rootMargin:"1200px 0px"});
+ vps.forEach((v,i)=>{const el=document.createElement("div");el.className="page";const W=Wc,H=W*v.h/v.w;el.style.width=W+"px";el.style.height=H+"px";
+  el.innerHTML='<canvas></canvas><div class="tl"></div><canvas class="ov"></canvas>';
+  const pg={n:i+1,el,W,H,vw:v.w,dpr,tok:0,done:false,busy:false,cv:el.children[0],tl:el.children[1],ov:el.children[2]};el._pg=pg;bindOv(pg);pages.push(pg);pagesEl.append(el);obs.observe(el)})}
+let vps=[];
+function zoom(f){const r=pagesEl.scrollTop/Math.max(1,pagesEl.scrollHeight);Z=Math.max(.5,Math.min(3,Z*f));buildPages();pagesEl.scrollTop=r*pagesEl.scrollHeight}
+
+/* ---------- questions ---------- */
+async function cropOf(q){const page=await pdf.getPage(q.p),vp=page.getViewport({scale:2.2}),c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
+ await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;const o=document.createElement("canvas"),sw=q.r[2]*vp.width,sh=q.r[3]*vp.height;o.width=sw;o.height=sh;
+ o.getContext("2d").drawImage(c,q.r[0]*vp.width,q.r[1]*vp.height,sw,sh,0,0,sw,sh);return o.toDataURL("image/png")}
+async function openQ(id){S.cur=id;showSide(true);renderQs();const q=S.qs.find(z=>z.id===id);if(!q)return;const pg=pages[q.p-1];
+ if(pg)pagesEl.scrollTo({top:pg.el.offsetTop+q.r[1]*pg.H-30,behavior:"smooth"});redrawAll();
+ const wk=$("wk"),key=path+"::"+id;if(wk.dataset.k!==key){wk.dataset.k=key;wk.src="playground.html#"+encodeURIComponent(key)}
+ $("qimg").textContent="Question load ho raha hai ...";if(!q.img)q.img=await cropOf(q);if(S.cur===id){const im=new Image();im.src=q.img;$("qimg").replaceChildren(im)}}
+function renderQs(){const ch=$("chips");ch.innerHTML="";S.qs.forEach(q=>{const b=document.createElement("button");b.textContent=q.label;b.className=q.id===S.cur?"on":"";b.onclick=()=>openQ(q.id);ch.append(b)});
+ const q=S.qs.find(z=>z.id===S.cur);$("qhead").hidden=$("wk").hidden=$("qimg").hidden=!q;$("qnone").hidden=!!q;if(q)$("qlab").value=q.label}
+$("qlab").oninput=()=>{const q=S.qs.find(z=>z.id===S.cur);if(q){q.label=$("qlab").value;persist();renderQs();redrawAll()}};
+$("qdel").onclick=()=>{const q=S.qs.find(z=>z.id===S.cur);if(!q||!confirm(q.label+" aur uska practice work delete karna hai?"))return;
+ S.qs=S.qs.filter(z=>z!==q);S.hist=S.hist.filter(h=>h[1]!==q);try{localStorage.removeItem("pg:"+path+"::"+q.id)}catch(e){}
+ S.cur=null;$("wk").dataset.k="";$("wk").src="about:blank";persist();redrawAll();renderQs()};
+
+/* ---------- save / load work (JSON) ---------- */
+$("save").onclick=()=>{const o={app:"icai-library",v:2,pdf:path,saved:new Date().toISOString(),ann:S.ann,
+  qs:S.qs.map(q=>({id:q.id,p:q.p,r:q.r,label:q.label,work:lsGet("pg:"+path+"::"+q.id)||{}}))};
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:"application/json"}));a.download=base(path).replace(/\.pdf$/i,"")+".work.json";
+ document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)};
+$("load").onclick=()=>$("lf").click();
+$("lf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+ try{const o=JSON.parse(await f.text());if(o.app!=="icai-library"||!o.pdf)throw 0;parent.postMessage({importWork:o},location.origin)}catch(_){alert("Ye valid work file nahi hai.")}};
+
+/* ---------- start ---------- */
+(async()=>{
+ if(!path){pagesEl.innerHTML='<div class="msg">Koi PDF chuni nahi gayi.</div>';return}
+ const sv=lsGet("rd:"+path);if(sv){S.ann=sv.ann||[];S.qs=sv.qs||[]}
+ try{const wt=await(await fetch(WORKER)).text();pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([wt],{type:"text/javascript"}));
+  pdf=await pdfjsLib.getDocument({url:RAW+enc(path),disableRange:true,disableStream:true}).promise;
+  vps=await Promise.all(Array.from({length:pdf.numPages},async(_,i)=>{const v=(await pdf.getPage(i+1)).getViewport({scale:1});return{w:v.width,h:v.height}}));
+  buildPages();renderQs();if(S.qs.length){showSide(true);openQ(S.qs[0].id)}}
+ catch(e){console.warn(e);pagesEl.innerHTML='<div class="msg">PDF load nahi hui. Internet check karo, ya upar "New tab" se kholo.<br><small>'+String(e.message||e)+'</small></div>'}
+})();
+</script></body></html>
