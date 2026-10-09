@@ -67,16 +67,17 @@ iframe{flex:1;border:0;width:100%;background:#fff}
 .m-pdf #pg{display:none}.m-work #vf{display:none}.m-split #stage{grid-template-columns:1fr 1fr}
 @media(max-width:900px){.m-split #stage{grid-template-columns:1fr;grid-template-rows:1fr 1fr}#pg{border-left:0;border-top:3px double var(--ledger)}}
 .pill{display:inline-flex;align-items:center;gap:5px}.ic{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;pointer-events:none}.ri{display:flex;color:var(--acc)}.btn .ic{width:20px;height:20px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,30px);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;opacity:0;transition:.25s;z-index:60;max-width:90vw;pointer-events:none;font:14px Georgia,serif}#toast.on{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="brand">CA Foundation Library<small>ICAI study material</small></div>
-  <div class="top"><button class="pill" id="fbtn" title="Folders" aria-label="Folders"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><input id="q" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="lw" title="Load saved work (.json)" aria-label="Load saved work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lwf" accept=".json,application/json" hidden><button class="pill" id="ed" title="Study material edition (click to change)" aria-label="Edition"></button><button class="pill" id="mute" title="Sound on / off" aria-label="Sound"></button></div>
+  <div class="top"><button class="pill" id="fbtn" title="Folders" aria-label="Folders"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><input id="q" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="xw" title="Export ALL work (one JSON file)" aria-label="Export all work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/></svg></button><button class="pill" id="lw" title="Import work (.json)" aria-label="Import work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lwf" accept=".json,application/json" hidden><button class="pill" id="ed" title="Study material edition (click to change)" aria-label="Edition"></button><button class="pill" id="mute" title="Sound on / off" aria-label="Sound"></button></div>
   <nav id="side" aria-label="Folders"></nav>
   <main id="main"></main>
 </div>
-<div id="viewer" class="m-pdf"><div id="bar"><button class="btn" id="close" title="Back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><b id="vt"></b><a class="btn" id="vo" target="_blank" rel="noopener" title="Open PDF in new tab" aria-label="Open in new tab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a></div><div id="stage"><iframe id="vf" title="PDF reader"></iframe></div></div>
+<div id="toast" role="status"></div><div id="viewer" class="m-pdf"><div id="bar"><button class="btn" id="close" title="Back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><b id="vt"></b><a class="btn" id="vo" target="_blank" rel="noopener" title="Open PDF in new tab" aria-label="Open in new tab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a></div><div id="stage"><iframe id="vf" title="PDF reader"></iframe></div></div>
 <script>
 const REPO="Brand1809/ICAI_SM_CFA",API="https://huggingface.co/api/datasets/"+REPO+"/tree/main",RAW="https://huggingface.co/datasets/"+REPO+"/resolve/main/";
 const $=id=>document.getElementById(id),enc=p=>p.split("/").map(encodeURIComponent).join("/"),base=p=>p.split("/").pop(),par=p=>p.split("/").slice(0,-1).join("/");
@@ -163,13 +164,24 @@ function openFile(p){play("file");let rc=JSON.parse(localStorage.getItem("recent
  const u=RAW+enc(p);$("vt").textContent=base(p);$("vo").href=u;loadReader(p);$("viewer").classList.add("on")}
 function closeV(){$("viewer").classList.remove("on");$("vf").src="about:blank"}
 
-/* ===== reader (reader.html) + work import ===== */
-function loadReader(p){const f=$("vf");f.src="about:blank";setTimeout(()=>{f.src="reader.html#"+encodeURIComponent(p)},30)}
-function importWork(o){try{localStorage.setItem("rd:"+o.pdf,JSON.stringify({ann:o.ann||[],qs:(o.qs||[]).map(q=>({id:q.id,p:q.p,r:q.r,label:q.label}))}));
- (o.qs||[]).forEach(q=>q.work&&localStorage.setItem("pg:"+o.pdf+"::"+q.id,JSON.stringify(q.work)));openFile(o.pdf)}catch(e){alert("Work load nahi hua: "+e.message)}}
+/* ===== reader (reader.html) + ONE master work file (also kept in browser storage) ===== */
+let curPdf="";
+function loadReader(p){curPdf=p;const f=$("vf");f.src="about:blank";setTimeout(()=>{f.src="reader.html#"+encodeURIComponent(p)},30)}
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+function collectAll(){const pdfs={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||k.slice(0,3)!=="rd:")continue;const p=k.slice(3),r=lsGet(k)||{};
+  pdfs[p]={saved:r.saved||0,ann:r.ann||[],qs:(r.qs||[]).map(q=>({...q,work:lsGet("pg:"+p+"::"+q.id)||{}}))}}
+ return{app:"icai-library",v:3,saved:new Date().toISOString(),pdfs}}
+function applyAll(o){const list=o.pdfs||(o.pdf?{[o.pdf]:{saved:Date.now(),ann:o.ann||[],qs:o.qs||[]}}:null);if(!list)throw new Error("bad file");let np=0,nq=0;
+ for(const p in list){const r=list[p],cur=lsGet("rd:"+p);if(cur&&(cur.saved||0)>(r.saved||0))continue;
+  lsSet("rd:"+p,{saved:r.saved||Date.now(),ann:r.ann||[],qs:(r.qs||[]).map(({work,...q})=>q)});(r.qs||[]).forEach(q=>q.work&&lsSet("pg:"+p+"::"+q.id,q.work));np++;nq+=(r.qs||[]).length}return[np,nq]}
+function downloadAll(o){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:"application/json"}));a.download="ICAI_Library_Work.json";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),3800)}
+$("xw").onclick=()=>{const o=collectAll(),n=Object.keys(o.pdfs).length;downloadAll(o);toast("Exported: "+n+" PDF(s) in one file (ICAI_Library_Work.json)")};
 $("lw").onclick=()=>$("lwf").click();
-$("lwf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const o=JSON.parse(await f.text());if(o.app!=="icai-library"||!o.pdf)throw 0;importWork(o)}catch(_){alert("Ye valid work file nahi hai.")}};
-addEventListener("message",e=>{if(e.origin===location.origin&&e.data&&e.data.importWork)importWork(e.data.importWork)});
+$("lwf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const o=JSON.parse(await f.text());if(o.app!=="icai-library")throw 0;const [p,q]=applyAll(o);toast("Restored: "+p+" PDF(s), "+q+" question(s)");
+ if($("viewer").classList.contains("on")&&curPdf)loadReader(curPdf)}catch(_){toast("Ye valid work file nahi hai.")}};
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
 $("close").onclick=()=>{play("back");closeV()};
 
 let tm;$("q").addEventListener("input",e=>{clearTimeout(tm);const v=e.target.value.trim().toLowerCase();play("tick");if(!v){main();return}

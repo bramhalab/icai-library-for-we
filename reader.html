@@ -7,8 +7,9 @@
 *{box-sizing:border-box}[hidden]{display:none!important}
 html,body{height:100%;margin:0}body{display:flex;flex-direction:column;background:var(--paper);color:var(--ink);font:15px/1.4 Georgia,serif}
 button{font:inherit;color:inherit;cursor:pointer}
-#top{display:flex;gap:10px;align-items:center;overflow-x:auto;padding:6px 10px;border-bottom:3px double var(--ledger);background:var(--card);flex:none}
-.g{display:flex;gap:4px;align-items:center;flex:none}.g+.g{border-left:1px solid var(--rule);padding-left:10px}
+#top{position:fixed;z-index:40;display:none;flex-wrap:wrap;gap:8px 12px;align-items:center;max-width:min(94vw,430px);padding:10px;border:2px solid var(--ledger);border-radius:18px;background:var(--card);box-shadow:0 8px 24px #0006}#top.open{display:flex}
+#fab{position:fixed;z-index:41;width:54px;height:54px;border-radius:50%;border:3px solid var(--card);background:var(--acc);color:var(--paper);box-shadow:0 4px 14px #0007;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;padding:0;left:0;top:0}#fab .ic{width:26px;height:26px}#fab.on{outline:3px solid var(--ledger)}
+.g{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 #top button{background:var(--paper);border:1.5px solid var(--rule);width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:6px}
 .ic{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 #sizes button{width:32px}
@@ -33,18 +34,25 @@ button{font:inherit;color:inherit;cursor:pointer}
 #qhead{display:flex;gap:6px;padding:6px 8px;flex:none}#qlab{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--rule);padding:4px 8px}
 #qimg{flex:none;max-height:34%;overflow:auto;background:#fff;border-bottom:3px double var(--ledger)}#qimg img{display:block;width:100%}
 #wk{flex:1;min-height:0;border:0;width:100%}#qnone{padding:24px;color:var(--soft);text-align:center}
+#qtimer{display:flex;align-items:center;gap:8px;padding:4px 8px 6px;flex:none;border-bottom:1px solid var(--rule)}
+#qtimer>button{width:36px;height:36px;border:1.5px solid var(--rule);border-radius:6px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;padding:0}
+#tdisp{font:700 22px "Courier New",monospace;min-width:84px;text-align:center}#tdisp.over{color:#B3492F}
+#tlims{display:flex;gap:4px;margin-left:auto}#tlims button{min-width:30px;height:28px;padding:0 7px;border:1.5px solid var(--rule);border-radius:14px;background:var(--card);font:12px Georgia,serif}
+#tlims button.on,#qhead #qtog.on{border-color:var(--acc);background:var(--acc);color:var(--paper)}
 </style></head><body>
 <div id="top">
  <div class="g" id="tools"><button data-t="sel" class="on" title="Text select / scroll" aria-label="Text select / scroll"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6M9 20h6M12 4v16"/></svg></button><button data-t="hl" title="Highlight text (drag over text)" aria-label="Highlight text (drag over text)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5l5 5-8 8-5-5z"/><path d="M6.5 12.5L4 18l3.5.5 3-2.5"/><path d="M13 21h8" stroke-width="3" opacity=".4"/></svg></button><button data-t="pen" title="Pen" aria-label="Pen"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button><button data-t="mk" title="Marker" aria-label="Marker"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16c3-7 5 3 9-3s6 1 9-5" stroke-width="5" opacity=".5"/></svg></button><button data-t="er" title="Eraser" aria-label="Eraser"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21h13"/><path d="M5.5 13.5L13 6l5 5-7.5 7.5a2 2 0 0 1-2.8 0l-2.2-2.2a2 2 0 0 1 0-2.8z"/></svg></button><button data-t="q" title="Select question" aria-label="Select question"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5" stroke-dasharray="3 2.5"/><path d="M9.7 10a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1.1.8-1.1 1.6"/><path d="M12 16.6v.01" stroke-width="2.6"/></svg></button></div>
  <div class="g" id="cols"></div>
  <div class="g" id="sizes"><button data-w=".0025" title="Thin" aria-label="Thin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg></button><button data-w=".005" class="on" title="Medium" aria-label="Medium"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor" stroke="none"/></svg></button><button data-w=".01" title="Thick" aria-label="Thick"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="currentColor" stroke="none"/></svg></button></div>
  <div class="g"><button id="undo" title="Undo (Ctrl+Z)" aria-label="Undo (Ctrl+Z)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="zo" title="Zoom out" aria-label="Zoom out"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6"/></svg></button><button id="zi" title="Zoom in" aria-label="Zoom in"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6M11 8v6"/></svg></button><button id="qeye" title="Hide / show question boxes on the PDF" aria-label="Hide or show question boxes"></button></div>
- <div class="g"><button id="save" title="Save work (download .json)" aria-label="Save work (download .json)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/></svg></button><button id="load" title="Load work (.json)" aria-label="Load work (.json)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lf" accept=".json,application/json" hidden><button id="ptog" title="Practice workspace" aria-label="Practice workspace"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 7h7"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01" stroke-width="2.6"/></svg></button></div>
+ <div class="g"><button id="save" title="Export ALL work (one JSON file)" aria-label="Export all work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/></svg></button><button id="load" title="Import work (.json)" aria-label="Import work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lf" accept=".json,application/json" hidden><button id="ptog" title="Practice workspace" aria-label="Practice workspace"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 7h7"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01" stroke-width="2.6"/></svg></button></div>
 </div>
+<button id="fab" title="Tools (drag me anywhere)" aria-label="Tools"></button>
 <div id="body"><div id="pages"><div class="msg">PDF load ho raha hai ...</div></div>
  <aside id="side" hidden>
   <div id="qbar"><span id="chips"></span></div>
-  <div id="qhead" hidden><input id="qlab" aria-label="Question name"><button id="qimgt"></button><button id="qdel" title="Delete question" aria-label="Delete question"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button><button id="qclose" title="Close panel" aria-label="Close panel"></button></div>
+  <div id="qhead" hidden><input id="qlab" aria-label="Question name"><button id="qimgt"></button><button id="qtog" title="Timer (optional)" aria-label="Timer"></button><button id="qdel" title="Delete question" aria-label="Delete question"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button><button id="qclose" title="Close panel" aria-label="Close panel"></button></div>
+  <div id="qtimer" hidden><button id="tplay"></button><span id="tdisp">00:00</span><button id="trst" title="Reset timer" aria-label="Reset timer"></button><span id="tlims"></span></div>
   <div id="qimg" hidden></div><iframe id="wk" title="Practice workspace" hidden></iframe>
   <div id="qnone">Upar <b>Question</b> tool chuno, phir PDF mein question ke upar rectangle kheencho. Uska practice workspace yahan khulega.</div>
  </aside></div>
@@ -54,14 +62,22 @@ const RAW="https://huggingface.co/datasets/Brand1809/ICAI_SM_CFA/resolve/main/",
 const $=id=>document.getElementById(id),enc=p=>p.split("/").map(encodeURIComponent).join("/"),base=p=>p.split("/").pop();
 const path=decodeURIComponent(location.hash.slice(1));
 const S={ann:[],qs:[],hist:[],cur:null},COLORS=["#f7d417","#5fd35f","#ff7eb6","#4aa8ff","#e0352b","#111111"];
-let pdf=null,pages=[],Z=1,tool="sel",color=COLORS[0],lw=.005,obs=null,showBoxes=true,imgHidden=false;
+let pdf=null,pages=[],Z=1,tool="sel",color=COLORS[0],lw=.005,obs=null,showBoxes=true,imgHidden=false,timerOpen=false;
 const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-const persist=()=>lsSet("rd:"+path,{ann:S.ann,qs:S.qs.map(q=>({id:q.id,p:q.p,r:q.r,label:q.label}))});
+function collectAll(){const pdfs={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||k.slice(0,3)!=="rd:")continue;const p=k.slice(3),r=lsGet(k)||{};
+  pdfs[p]={saved:r.saved||0,ann:r.ann||[],qs:(r.qs||[]).map(q=>({...q,work:lsGet("pg:"+p+"::"+q.id)||{}}))}}
+ return{app:"icai-library",v:3,saved:new Date().toISOString(),pdfs}}
+function applyAll(o){const list=o.pdfs||(o.pdf?{[o.pdf]:{saved:Date.now(),ann:o.ann||[],qs:o.qs||[]}}:null);if(!list)throw new Error("bad file");let np=0,nq=0;
+ for(const p in list){const r=list[p],cur=lsGet("rd:"+p);if(cur&&(cur.saved||0)>(r.saved||0))continue;
+  lsSet("rd:"+p,{saved:r.saved||Date.now(),ann:r.ann||[],qs:(r.qs||[]).map(({work,...q})=>q)});(r.qs||[]).forEach(q=>q.work&&lsSet("pg:"+p+"::"+q.id,q.work));np++;nq+=(r.qs||[]).length}return[np,nq]}
+function downloadAll(o){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:"application/json"}));a.download="ICAI_Library_Work.json";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+
+const persist=()=>lsSet("rd:"+path,{ann:S.ann,qs:S.qs.map(q=>({id:q.id,p:q.p,r:q.r,label:q.label,spent:q.spent||0,limit:q.limit||0})),saved:Date.now()});
 const pagesEl=$("pages");
 
 /* ---------- toolbar ---------- */
 document.querySelectorAll("#tools button").forEach(b=>b.onclick=()=>{tool=b.dataset.t;document.querySelectorAll("#tools button").forEach(x=>x.classList.toggle("on",x===b));
- pagesEl.className=/^(pen|mk|er|q|hl)$/.test(tool)?"draw":"";if(getSelection)getSelection().removeAllRanges();if(tool==="q"&&!showBoxes)toggleBoxes()});
+ pagesEl.className=/^(pen|mk|er|q|hl)$/.test(tool)?"draw":"";if(getSelection)getSelection().removeAllRanges();if(tool==="q"&&!showBoxes)toggleBoxes();syncFab()});
 COLORS.forEach((c,i)=>{const b=document.createElement("button");b.className="dot"+(i?"":" on");b.style.background=c;b.title=c;b.onclick=()=>{color=c;document.querySelectorAll(".dot").forEach(x=>x.classList.toggle("on",x===b))};$("cols").append(b)});
 document.querySelectorAll("#sizes button").forEach(b=>b.onclick=()=>{lw=+b.dataset.w;document.querySelectorAll("#sizes button").forEach(x=>x.classList.toggle("on",x===b))});
 $("undo").onclick=()=>undo();addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="z"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undo()}});
@@ -74,6 +90,21 @@ function toggleBoxes(){showBoxes=!showBoxes;$("qeye").innerHTML=ic(showBoxes?EYE
 function setImg(){$("qimgt").innerHTML=ic(imgHidden?EYEX:EYE);$("qimgt").title=$("qimgt").ariaLabel=imgHidden?"Show question image":"Hide question image";const q=S.qs.find(z=>z.id===S.cur);$("qimg").hidden=!q||imgHidden}
 $("qeye").onclick=toggleBoxes;$("qimgt").onclick=()=>{imgHidden=!imgHidden;setImg()};$("qclose").onclick=()=>showSide(false);
 $("qeye").innerHTML=ic(EYE);$("qclose").innerHTML=ic('<path d="M6 6l12 12M18 6L6 18"/>');setImg();
+
+/* ---------- floating tool bar: one round button, drag it anywhere, tap to open ---------- */
+const SUBJ=[["acc",/\b(accounting|accounts?|acc)\b/i],["law",/\b(business laws?|laws?)\b/i],["qa",/\b(quantitative|aptitude|qa|maths?|mathematics|stats?|statistics|lr|logical)\b/i],["eco",/\b(economics|eco|bck|commercial)\b/i]];
+function subjOf(p){for(const seg of p.split("/")){const t=seg.replace(/[_\-\/().]/g," ");const m=SUBJ.find(x=>x[1].test(t));if(m)return m[0]}return"acc"}
+const fab=$("fab"),pal=$("top"),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));let fpos=lsGet("fabPos")||{};
+function placePal(){if(!pal.classList.contains("open"))return;const r=fab.getBoundingClientRect(),w=pal.offsetWidth,h=pal.offsetHeight;let x=r.left+r.width/2-w/2,y=r.bottom+10;if(y+h>innerHeight-6)y=r.top-h-10;
+ pal.style.left=clamp(x,6,innerWidth-w-6)+"px";pal.style.top=clamp(y,6,innerHeight-h-6)+"px"}
+function placeFab(){const x=clamp(fpos.x==null?innerWidth-70:fpos.x,6,innerWidth-60),y=clamp(fpos.y==null?innerHeight*.45:fpos.y,6,innerHeight-60);fab.style.left=x+"px";fab.style.top=y+"px";placePal()}
+function syncFab(){const b=document.querySelector('#tools button[data-t="'+tool+'"]');if(b)fab.innerHTML=b.innerHTML}
+function togglePal(on){pal.classList.toggle("open",on);fab.classList.toggle("on",on);placePal()}
+fab.onpointerdown=e=>{e.preventDefault();const sx=e.clientX,sy=e.clientY,r=fab.getBoundingClientRect(),ox=sx-r.left,oy=sy-r.top;let moved=false;try{fab.setPointerCapture(e.pointerId)}catch(_){}
+ const mv=ev=>{if(Math.abs(ev.clientX-sx)+Math.abs(ev.clientY-sy)>8)moved=true;if(moved){fpos={x:ev.clientX-ox,y:ev.clientY-oy};placeFab()}};
+ const up=()=>{fab.removeEventListener("pointermove",mv);fab.removeEventListener("pointerup",up);fab.removeEventListener("pointercancel",up);if(moved)lsSet("fabPos",fpos);else togglePal(!pal.classList.contains("open"))};
+ fab.addEventListener("pointermove",mv);fab.addEventListener("pointerup",up);fab.addEventListener("pointercancel",up)};
+pagesEl.addEventListener("pointerdown",()=>togglePal(false),true);addEventListener("resize",placeFab);placeFab();syncFab();
 /* ---------- drawing ---------- */
 function qbox(x,W,H,r,label,on){x.save();x.strokeStyle=on?"#1E4D6B":"#8C6B3F";x.fillStyle=on?"rgba(30,77,107,.08)":"rgba(140,107,63,.06)";x.lineWidth=2;x.setLineDash([7,4]);
  x.fillRect(r[0]*W,r[1]*H,r[2]*W,r[3]*H);x.strokeRect(r[0]*W,r[1]*H,r[2]*W,r[3]*H);x.setLineDash([]);
@@ -100,7 +131,7 @@ function bindOv(pg){const o=pg.ov;let cur=null;const pt=e=>{const b=o.getBoundin
   else if(c.hl){if(c.rects.length){const o={t:"hl",p:pg.n,c:color,r:c.rects};S.ann.push(o);S.hist.push(["add",o]);persist()}}
   else if(!c.er){S.ann.push(c);S.hist.push(["add",c]);persist()}drawOv(pg)};o.onpointerup=up;o.onpointercancel=up}
 function undo(){const h=S.hist.pop();if(!h)return;const [k,o]=h;
- if(k==="add"){const i=S.ann.indexOf(o);if(i>=0)S.ann.splice(i,1);else{const j=S.qs.indexOf(o);if(j>=0){S.qs.splice(j,1);if(S.cur===o.id)S.cur=null}}}else S.ann.push(o);
+ if(k==="add"){const i=S.ann.indexOf(o);if(i>=0)S.ann.splice(i,1);else{const j=S.qs.indexOf(o);if(j>=0){S.qs.splice(j,1);if(S.cur===o.id){tStop();S.cur=null}}}}else S.ann.push(o);
  redrawAll();persist();renderQs()}
 
 /* text highlight: drag over text like a highlighter; it snaps to the text lines under the drag */
@@ -131,25 +162,43 @@ function zoom(f){const r=pagesEl.scrollTop/Math.max(1,pagesEl.scrollHeight);Z=Ma
 async function cropOf(q){const page=await pdf.getPage(q.p),vp=page.getViewport({scale:2.2}),c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
  await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;const o=document.createElement("canvas"),sw=q.r[2]*vp.width,sh=q.r[3]*vp.height;o.width=sw;o.height=sh;
  o.getContext("2d").drawImage(c,q.r[0]*vp.width,q.r[1]*vp.height,sw,sh,0,0,sw,sh);return o.toDataURL("image/png")}
-async function openQ(id){S.cur=id;showSide(true);renderQs();const q=S.qs.find(z=>z.id===id);if(!q)return;const pg=pages[q.p-1];
+async function openQ(id){if(S.cur!==id)tStop();S.cur=id;showSide(true);renderQs();const q=S.qs.find(z=>z.id===id);if(!q)return;const pg=pages[q.p-1];
  if(pg)pagesEl.scrollTo({top:pg.el.offsetTop+q.r[1]*pg.H-30,behavior:"smooth"});redrawAll();
- const wk=$("wk"),key=path+"::"+id;if(wk.dataset.k!==key){wk.dataset.k=key;wk.src="playground.html#"+encodeURIComponent(key)}
+ const wk=$("wk"),key=path+"::"+id;if(wk.dataset.k!==key){wk.dataset.k=key;wk.src="playground.html?s="+subjOf(path)+"#"+encodeURIComponent(key)}
  $("qimg").textContent="Question load ho raha hai ...";if(!q.img)q.img=await cropOf(q);if(S.cur===id){const im=new Image();im.src=q.img;$("qimg").replaceChildren(im)}}
 function renderQs(){const ch=$("chips");ch.innerHTML="";S.qs.forEach(q=>{const b=document.createElement("button");b.textContent=q.label;b.className=q.id===S.cur?"on":"";b.onclick=()=>openQ(q.id);ch.append(b)});
- const q=S.qs.find(z=>z.id===S.cur);$("qhead").hidden=$("wk").hidden=!q;$("qimg").hidden=!q||imgHidden;$("qnone").hidden=!!q;if(q)$("qlab").value=q.label}
+ const q=S.qs.find(z=>z.id===S.cur);$("qhead").hidden=$("wk").hidden=!q;$("qimg").hidden=!q||imgHidden;$("qnone").hidden=!!q;$("qtimer").hidden=!q||!timerOpen;if(q){$("qlab").value=q.label;tShow()}}
 $("qlab").oninput=()=>{const q=S.qs.find(z=>z.id===S.cur);if(q){q.label=$("qlab").value;persist();renderQs();redrawAll()}};
 $("qdel").onclick=()=>{const q=S.qs.find(z=>z.id===S.cur);if(!q||!confirm(q.label+" aur uska practice work delete karna hai?"))return;
- S.qs=S.qs.filter(z=>z!==q);S.hist=S.hist.filter(h=>h[1]!==q);try{localStorage.removeItem("pg:"+path+"::"+q.id)}catch(e){}
+ tStop();S.qs=S.qs.filter(z=>z!==q);S.hist=S.hist.filter(h=>h[1]!==q);try{localStorage.removeItem("pg:"+path+"::"+q.id)}catch(e){}
  S.cur=null;$("wk").dataset.k="";$("wk").src="about:blank";persist();redrawAll();if(S.qs.length)openQ(S.qs[0].id);else{renderQs();showSide(false)}};
 
+/* ---------- optional timer (per question; time spent is saved with the question) ---------- */
+const PLAY='<path d="M7 4l13 8-13 8z"/>',PAUSE='<path d="M8 5v14M16 5v14" stroke-width="3"/>',TIMER='<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5M12 2.5V6"/>',RESET='<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>';
+let tId=null,tBase=0,tT0=0;
+const mmss=n=>String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0");
+function beep(){if(localStorage.getItem("mute")==="1")return;try{const a=new(window.AudioContext||window.webkitAudioContext)();[880,1100,880].forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+i*.22;o.frequency.value=f;g.gain.setValueAtTime(.25,t);g.gain.exponentialRampToValueAtTime(.001,t+.18);o.connect(g).connect(a.destination);o.start(t);o.stop(t+.2)})}catch(e){}}
+function tShow(){const q=S.qs.find(z=>z.id===S.cur);if(!q)return;const sp=q.spent||0,lim=(q.limit||0)*60,v=lim?lim-sp:sp;
+ $("tdisp").textContent=(v<0?"+":"")+mmss(Math.abs(v));$("tdisp").classList.toggle("over",lim>0&&v<0);
+ $("tplay").innerHTML=ic(tId?PAUSE:PLAY);$("tplay").title=$("tplay").ariaLabel=tId?"Pause":"Start";$("qtog").classList.toggle("on",!!tId||timerOpen);
+ document.querySelectorAll("#tlims button").forEach(b=>b.classList.toggle("on",+b.dataset.m===(q.limit||0)))}
+function tStop(){if(tId){clearInterval(tId);tId=null;persist()}tShow()}
+function tStart(){const q=S.qs.find(z=>z.id===S.cur);if(!q||tId)return;tBase=q.spent||0;tT0=Date.now();
+ tId=setInterval(()=>{const qq=S.qs.find(z=>z.id===S.cur);if(!qq){tStop();return}const old=qq.spent||0,lim=(qq.limit||0)*60;
+  qq.spent=tBase+Math.floor((Date.now()-tT0)/1000);if(lim&&old<lim&&qq.spent>=lim)beep();tShow();if(qq.spent!==old&&qq.spent%10===0)persist()},400);tShow()}
+$("qtog").innerHTML=ic(TIMER);$("trst").innerHTML=ic(RESET);
+$("qtog").onclick=()=>{timerOpen=!timerOpen;$("qtimer").hidden=!timerOpen||!S.qs.some(z=>z.id===S.cur);tShow()};
+$("tplay").onclick=()=>tId?tStop():tStart();
+$("trst").onclick=()=>{const q=S.qs.find(z=>z.id===S.cur);if(!q)return;tStop();q.spent=0;persist();tShow()};
+[[0,"\u221e","Stopwatch (no time limit)"],[5,"5","5 minute limit"],[10,"10","10 minute limit"],[15,"15","15 minute limit"],[20,"20","20 minute limit"]].forEach(([m,t,h])=>{const b=document.createElement("button");b.dataset.m=m;b.textContent=t;b.title=b.ariaLabel=h;
+ b.onclick=()=>{const q=S.qs.find(z=>z.id===S.cur);if(q){q.limit=m;persist();tShow()}};$("tlims").append(b)});
+addEventListener("pagehide",()=>tStop());
+
 /* ---------- save / load work (JSON) ---------- */
-$("save").onclick=()=>{const o={app:"icai-library",v:2,pdf:path,saved:new Date().toISOString(),ann:S.ann,
-  qs:S.qs.map(q=>({id:q.id,p:q.p,r:q.r,label:q.label,work:lsGet("pg:"+path+"::"+q.id)||{}}))};
- const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:"application/json"}));a.download=base(path).replace(/\.pdf$/i,"")+".work.json";
- document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)};
+$("save").onclick=()=>{tStop();downloadAll(collectAll())};
 $("load").onclick=()=>$("lf").click();
 $("lf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
- try{const o=JSON.parse(await f.text());if(o.app!=="icai-library"||!o.pdf)throw 0;parent.postMessage({importWork:o},location.origin)}catch(_){alert("Ye valid work file nahi hai.")}};
+ try{const o=JSON.parse(await f.text());if(o.app!=="icai-library")throw 0;const [p,q]=applyAll(o);alert("Restored: "+p+" PDF(s), "+q+" question(s).");location.reload()}catch(_){alert("Ye valid work file nahi hai.")}};
 
 /* ---------- start ---------- */
 (async()=>{

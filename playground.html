@@ -1,27 +1,54 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Accounting Practice Playground</title>
+<title>Practice Playground</title>
 <style>
 :root{--paper:#F3EEE2;--dark:#E8E0CC;--ink:#1E2A38;--soft:#4A5568;--ledger:#8C6B3F;--acc:#1E4D6B;--rule:#C9BEA0;--card:#FBF8F0}
 @media (prefers-color-scheme:dark){:root{--paper:#1b1f26;--dark:#252b34;--ink:#ece6d6;--soft:#a9b0bb;--ledger:#d2a869;--acc:#7fb8d9;--rule:#3a424e;--card:#222831}}
-*{box-sizing:border-box}body{margin:0;padding:10px;background:var(--paper);color:var(--ink);font:16px/1.45 Georgia,serif}
-button{font:inherit;color:inherit;cursor:pointer}
-.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.tabs button{background:var(--card);border:1.5px solid var(--rule);padding:6px 12px;font:13px Palatino,Georgia,serif}.tabs button.on{border-color:var(--acc);color:var(--acc);font-weight:700}
-#notes{width:100%;min-height:55vh;font:15px/1.6 'Courier New',monospace;color:var(--ink);background:var(--card) linear-gradient(var(--rule) 1px,transparent 1px) 0 0/100% 24px;border:1px solid var(--rule);padding:8px;resize:vertical}
-#cmd{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--acc);padding:9px 12px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chip{border:1px solid var(--ledger);background:var(--card);padding:3px 10px;font-size:13px;cursor:pointer;border-radius:14px}
-.acard{background:var(--card);border:1px solid var(--rule);box-shadow:2px 3px 0 var(--rule);padding:10px;margin:10px 0}
-.ah{display:flex;justify-content:space-between;align-items:center}.ah b{font:700 16px Palatino,Georgia,serif;color:var(--acc)}
-.ah button,.r button{background:transparent;border:0;font-size:18px;color:var(--soft);padding:0 6px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.two.one{grid-template-columns:1fr}
-.sh{font:700 12px 'Courier New',monospace;color:var(--ledger);border-bottom:2px solid var(--ledger);padding-bottom:3px;margin-bottom:4px}
-.r{display:flex;gap:3px;margin-bottom:3px}.r input{min-width:0;font:13px Georgia,serif;color:var(--ink);background:var(--paper);border:1px solid var(--rule);padding:5px}
-.r .lb{flex:2}.r .am{flex:1;text-align:right;font-family:'Courier New',monospace}
-.add{background:transparent;border:1px dashed var(--ledger);color:var(--ledger);font:12px 'Courier New',monospace;padding:3px 8px;margin:4px 0}
-.tot{font:700 13px 'Courier New',monospace;text-align:right;border-top:2px solid var(--ink);padding-top:3px}
-.chk{font:12px 'Courier New',monospace;margin-top:6px;color:var(--soft)}.chk.ok{color:#2F6B4F;font-weight:700}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{max-width:100%;overflow-x:hidden}body{margin:0;padding:10px 10px 50px;background:var(--paper);color:var(--ink);font:16px/1.45 Georgia,serif}
+button{font:inherit;color:inherit;cursor:pointer}input,textarea{font:inherit;color:var(--ink)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.ic{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;flex:none}
+.bar{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;position:sticky;top:0;background:var(--paper);padding:4px 0;z-index:5}
+.tabs{display:flex;gap:6px}.tabs button{width:44px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:var(--card);border:1.5px solid var(--rule);border-radius:6px}
+.tabs button.on{border-color:var(--acc);background:var(--acc);color:var(--paper)}
+#subj button{width:34px;height:32px;border-radius:50%}
+.tp{min-width:0}
+#notes{display:block;width:100%;min-height:60vh;font:16px/28px Georgia,serif;padding:0 10px;border:1px solid var(--rule);background:var(--card) linear-gradient(transparent 27px,var(--rule) 27px) 0 0/100% 28px local;resize:vertical}
+#cmd,#fq{display:block;width:100%;padding:9px 12px;background:var(--card);border:1.5px solid var(--acc);font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chip{border:1px solid var(--ledger);background:var(--card);padding:3px 10px;font-size:13px;cursor:pointer;border-radius:14px}.chip.on{background:var(--acc);color:var(--paper);border-color:var(--acc)}
+.acard{min-width:0;margin:8px 0;border:1px solid var(--rule);background:var(--card);overflow:hidden}.acard.dragging{opacity:.5}
+.ah{display:flex;align-items:center;gap:6px;padding:6px 8px;cursor:pointer;min-height:46px}
+.ah b{flex:1;min-width:0;overflow-wrap:anywhere;font-size:15px;color:var(--acc)}
+.gp{background:transparent;border:0;color:var(--soft);padding:4px;cursor:grab;touch-action:none;display:flex}.gp .ic{width:18px;height:18px}
+.ex{display:flex;transition:transform .15s;color:var(--ledger)}.acard.open .ex{transform:rotate(90deg)}
+.sum{font:12px 'Courier New',monospace;color:var(--soft);white-space:nowrap}
+.rm{width:34px;height:34px;font-size:20px;line-height:1;flex:none;background:transparent;border:0;color:var(--soft)}
+.cbody{display:none;padding:0 10px 10px}.acard.open .cbody{display:block}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1.5px solid var(--ink)}.two.one{grid-template-columns:minmax(0,1fr)}
+.side{min-width:0;padding:6px}.side+.side{border-left:1.5px solid var(--ink)}
+.sh{font:700 12px 'Courier New',monospace;color:var(--ledger);border-bottom:2px solid var(--ledger);padding-bottom:3px;margin-bottom:6px}
+.rows{min-height:36px}
+.r{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(64px,34%) 26px;gap:3px;align-items:center;margin-bottom:4px;background:var(--card)}
+.r.drag{opacity:.55;outline:2px dashed var(--acc)}
+.r input{width:100%;min-width:0;font-size:15px;padding:7px 6px;background:var(--paper);border:1px solid var(--rule)}.r .am{text-align:right;font-family:'Courier New',monospace}
+.r .gp{padding:2px;justify-content:center}.rx{width:26px;height:30px;padding:0;font-size:18px;color:var(--soft);background:transparent;border:0}
+.add,.acts button{min-height:34px;background:transparent;border:1px dashed var(--ledger);color:var(--ledger);font:12px 'Courier New',monospace;padding:3px 10px;margin:4px 0;display:inline-flex;align-items:center;gap:6px}
+.tot{display:flex;justify-content:space-between;margin-top:6px;font-weight:700;font-family:'Courier New',monospace}.tot::before{content:"Total";font-weight:400;color:var(--soft);font-family:Georgia,serif}
+.chk{margin-top:6px;font:12px 'Courier New',monospace;color:var(--soft)}.chk.ok{color:#2F6B4F;font-weight:700}
 .acard details{margin-top:6px;font-size:13px;color:var(--soft)}
-@media(max-width:560px){.two{grid-template-columns:1fr}}
+@media(max-width:620px){.two{grid-template-columns:minmax(0,1fr)}.side+.side{border-left:0;border-top:1.5px solid var(--ink)}}
+@media(pointer:coarse){input,textarea{font-size:16px!important}.r input{padding:9px 6px}}
+.fcard{display:flex;gap:8px;align-items:flex-start;background:var(--card);border:1px solid var(--rule);padding:8px 10px;margin:6px 0}
+.fcard>div{flex:1;min-width:0}.fn{font:700 13px Georgia;color:var(--acc)}.fcard pre{margin:2px 0 0;white-space:pre-wrap;word-break:break-word;font:14px/1.4 'Courier New',monospace}
+.fcard button{width:34px;height:34px;flex:none;background:transparent;border:1.5px solid var(--rule);border-radius:6px;display:inline-flex;align-items:center;justify-content:center}.fcard button.ok{border-color:#2F6B4F;color:#2F6B4F}
+.fld{margin:0 0 12px}.fld label{display:block;font:700 12px 'Courier New',monospace;color:var(--ledger);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.fld textarea{display:block;width:100%;min-height:76px;padding:8px 10px;background:var(--card);border:1px solid var(--rule);resize:vertical;font:15px/1.5 Georgia,serif}
+.acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}#wc{font:12px 'Courier New',monospace;color:var(--soft);margin-right:auto}
+.dtools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}.dtools button{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:var(--card);border:1.5px solid var(--rule);border-radius:6px}
+.dtools button.on{border-color:var(--acc);background:var(--acc);color:var(--paper)}.dtools .sp{flex:1}
+.dtools .dc{width:24px;height:24px;border-radius:50%}.dtools .dc.on{border:3px solid var(--ink)}
+#dcv{display:block;width:100%;aspect-ratio:4/3;background:var(--card);border:1px solid var(--rule);touch-action:none;cursor:crosshair}
 .calc{width:min(100%,340px);margin:6px auto;background:#25232a;border-radius:12px;padding:14px;color:#fff;font-family:system-ui,sans-serif;box-shadow:0 4px 0 #111}
 .cb{font-weight:700;font-size:13px;display:flex;justify-content:space-between;color:#ccc;margin-bottom:6px}
 .lcdw{background:#cfd8d4;color:#111;border-radius:4px;padding:6px 10px;box-shadow:inset 0 2px 5px #0006;height:74px;position:relative;overflow:hidden}
@@ -32,34 +59,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .kg button:active{transform:translateY(2px);box-shadow:none}
 .kg .sm{font-size:9px;line-height:1.1}.kg .pu{background:#7a1f6e}.kg .p{grid-row:span 2;height:auto}.kg .lt{background:#e5e5e5;color:#222}
 .kg i{display:block}.cap{grid-column:5/7;text-align:center;font:9px system-ui;color:#ccc;align-self:end}
-.tabs button{width:46px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center}.ic{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-
-html,body{max-width:100%;overflow-x:hidden}body{padding:10px 10px 40px}
-.tp{min-width:0}
-#notes{display:block;width:100%;min-height:60vh;font:16px/28px Georgia,serif;padding:0 10px;border:1px solid var(--rule);color:var(--ink);background:var(--card) linear-gradient(transparent 27px,var(--rule) 27px) 0 0/100% 28px local;resize:vertical;outline:none}
-#notes:focus{border-color:var(--acc)}
-#cmd{display:block;width:100%;font-size:16px}
-.acard{min-width:0;padding:0;margin:8px 0;box-shadow:none;border:1px solid var(--rule);overflow:hidden}
-.ah{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;min-height:46px}
-.ah b{flex:1;min-width:0;overflow-wrap:anywhere;font-size:15px}
-.ex{display:flex;transition:transform .15s;color:var(--ledger)}.acard.open .ex{transform:rotate(90deg)}
-.sum{font:12px 'Courier New',monospace;color:var(--soft);white-space:nowrap}
-.rm{width:34px;height:34px;font-size:20px;line-height:1;flex:none}
-.cbody{display:none;padding:0 12px 12px}.acard.open .cbody{display:block}
-.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;margin:0;border:1.5px solid var(--ink)}.two.one{grid-template-columns:minmax(0,1fr)}
-.side{min-width:0;padding:6px 8px}.side+.side{border-left:1.5px solid var(--ink)}
-.sh{margin:0 0 6px}
-.r{display:grid;grid-template-columns:minmax(0,1fr) minmax(64px,34%) 28px;gap:4px;align-items:center;margin-bottom:4px}
-.r input{width:100%;min-width:0;font-size:15px;padding:7px 6px}.r .am{text-align:right}
-.rx{width:28px;height:30px;padding:0;font-size:18px;color:var(--soft);background:transparent;border:0}
-.add{min-height:34px}
-.tot{display:flex;justify-content:space-between;margin-top:6px;font-weight:700}.tot::before{content:"Total";font-weight:400;color:var(--soft)}
-.chk{margin-top:8px}
-@media(max-width:620px){.two{grid-template-columns:minmax(0,1fr)}.side+.side{border-left:0;border-top:1.5px solid var(--ink)}}
-@media(pointer:coarse){input,textarea{font-size:16px!important}.r input{padding:9px 6px}}
 </style></head><body><div id="pg"></div>
 <script>
 const $=id=>document.getElementById(id);
+const qp=new URLSearchParams(location.search);let qsub=qp.get("s")||"";
 let ac;const play=()=>{if(localStorage.getItem("mute")==="1")return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();
  const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;o.type="square";o.frequency.value=1800;g.gain.setValueAtTime(.05,t);g.gain.exponentialRampToValueAtTime(.001,t+.04);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+.04)}catch(e){}};
 const D=[];
@@ -109,47 +112,187 @@ function find(s){s=norm(s);if(!s)return[];
    else{const w=s.split(" ");if(w.every(t=>x.includes(t)))b=Math.max(b,40)}}
   return[d,b]}).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);return sc.map(x=>x[0])}
 
+
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
-let pgPath="",pgS={notes:"",cards:[]},pgBuilt=false;
+const uid=()=>Math.random().toString(36).slice(2,9);
+const ic=p=>'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+p+'</svg>';
+const IC={n:'<path d="M4 4h12l4 4v12H4z"/><path d="M8 11h8M8 15h8"/>',f:'<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 10h18M12 4v16"/>',
+ r:'<path d="M18 5H6l6 7-6 7h12"/>',a:'<path d="M5 3h14v18H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>',d:'<path d="M4 20V4M4 20h16"/><path d="M7 16l4-5 3 3 5-7"/>',
+ c:'<rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 7h7"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01" stroke-width="2.6"/>',
+ acc:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M10 4v16"/>',law:'<path d="M12 3v18M7 21h10M5 7h14"/><path d="M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/>',
+ qa:'<path d="M18 5H6l6 7-6 7h12"/>',eco:'<path d="M4 20V4M4 20h16"/><path d="M7 16l4-5 3 3 5-7"/>',
+ grip:'<path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" stroke-width="3"/>',bal:'<path d="M12 3v18M5 7h14"/><path d="M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/>',
+ copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+ undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',plus:'<path d="M12 5v14M5 12h14"/>',pen:'<path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>',txt:'<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',
+ ax:'<path d="M5 4v15h15"/>',ds:'<path d="M5 4v15h15"/><path d="M8 7l9 8M8 16l9-9"/>',ppc:'<path d="M5 4v15h15"/><path d="M7 7c8 0 10 4 10 10"/>',cost:'<path d="M5 4v15h15"/><path d="M8 7c2 12 6 12 10 0"/>'};
+const TT={n:"Working notes",f:"Formats (account layouts)",r:"Formulas",a:"Answer frame",d:"Diagram pad",c:"Calculator"};
+const BY={acc:["n","f","r","c"],law:["n","a"],qa:["n","r","c"],eco:["n","a","d","r","c"]};
+const SN={acc:"Accounting",law:"Business Laws",qa:"Quantitative Aptitude",eco:"Business Economics"};
+let pgPath="",pgS={},subj="acc",tab="n";const built={},REF={},FILL={};
 const pgSave=()=>{try{localStorage.setItem("pg:"+pgPath,JSON.stringify(pgS))}catch(e){}};
-function pgLoad(){try{pgS=JSON.parse(localStorage.getItem("pg:"+pgPath))||{}}catch(e){pgS={}}pgS.notes=pgS.notes||"";pgS.cards=pgS.cards||[];$("notes").value=pgS.notes;renderCards()}
-function pgInit(){if(pgBuilt)return;pgBuilt=true;
- $("pg").innerHTML='<div class="tabs"><button data-t="tn" class="on" title="Working notes" aria-label="Working notes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h12l4 4v12H4z"/><path d="M8 11h8M8 15h8"/></svg></button><button data-t="tf" title="Formats (account layouts)" aria-label="Formats"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 10h18M12 4v16"/></svg></button><button data-t="tc" title="Calculator" aria-label="Calculator"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 7h7"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01" stroke-width="2.6"/></svg></button></div>'+
- '<div id="tn" class="tp"><textarea id="notes" placeholder="Working notes: write your workings here. Saved automatically for this PDF."></textarea></div>'+
- '<div id="tf" class="tp" hidden><input id="cmd" list="adl" placeholder="Command: account name (trading, revaluation, brs...) then Enter" autocomplete="off"><datalist id="adl">'+D.map(d=>'<option value="'+esc(d.n)+'">').join("")+'</datalist><div class="chips" id="chp"></div><div id="cards"></div></div>'+
- '<div id="tc" class="tp" hidden>'+calcHTML()+'</div>';
- document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));document.querySelectorAll(".tp").forEach(t=>t.hidden=t.id!==b.dataset.t);play("tick")});
- $("notes").oninput=()=>{pgS.notes=$("notes").value;pgSave()};
+
+/* ---------- formulas ---------- */
+const FM={
+acc:[["Basics","Accounting equation","Assets = Capital + Liabilities"],["Basics","Opening capital","Opening capital = Assets \u2212 Liabilities"],
+["Depreciation","Straight line (SLM)","Annual depreciation = (Cost \u2212 Scrap value) \u00f7 Life in years"],["Depreciation","Written down value (WDV)","Depreciation = Book value at start \u00d7 Rate %"],
+["Final accounts","Gross profit","Gross profit = Sales \u2212 Cost of goods sold"],["Final accounts","Cost of goods sold","COGS = Opening stock + Purchases + Direct expenses \u2212 Closing stock"],
+["Final accounts","Net profit","Net profit = Gross profit + Other incomes \u2212 Indirect expenses"],
+["Incomplete records","Profit from capitals","Profit = Closing capital \u2212 Opening capital + Drawings \u2212 Capital introduced"],
+["Incomplete records","Credit sales","Credit sales = Cash received + Returns + Bad debts + Discount + Closing debtors \u2212 Opening debtors"],
+["Incomplete records","Credit purchases","Credit purchases = Cash paid + Returns + Discount + Closing creditors \u2212 Opening creditors"],
+["Partnership","Gaining / sacrificing ratio","Gaining ratio = New ratio \u2212 Old ratio\nSacrificing ratio = Old ratio \u2212 New ratio"],
+["Partnership","Goodwill (average profit)","Goodwill = Average profit \u00d7 Number of years' purchase"],
+["Partnership","Super profit","Super profit = Average profit \u2212 Normal profit\nNormal profit = Capital employed \u00d7 Normal rate %"],
+["Not-for-profit","Subscription income (I&E)","Income = Received \u2212 Opening outstanding + Closing outstanding \u2212 Closing advance + Opening advance"],
+["Companies","Securities premium","Premium = Issue price \u2212 Face value"]],
+qa:[["Ratio & proportion","Compound / duplicate ratio","Compound: (a:b)(c:d) = ac : bd\nDuplicate: a\u00b2 : b\u00b2 ; Triplicate: a\u00b3 : b\u00b3 ; Sub-duplicate: \u221aa : \u221ab"],
+["Ratio & proportion","Proportion","a : b = c : d \u21d2 ad = bc\nMean proportional b = \u221a(ac) ; Third proportional c = b\u00b2 \u00f7 a"],
+["Indices & logs","Laws of indices","a^m \u00b7 a^n = a^(m+n) ; a^m \u00f7 a^n = a^(m\u2212n) ; (a^m)^n = a^(mn)\na\u2070 = 1 ; a^(\u2212n) = 1 \u00f7 a^n ; a^(1/n) = n\u221aa"],
+["Indices & logs","Laws of logarithms","log(mn) = log m + log n ; log(m/n) = log m \u2212 log n\nlog m^n = n log m ; log_a b = log b \u00f7 log a ; log_a a = 1 ; log 1 = 0"],
+["Equations","Quadratic equation","x = [\u2212b \u00b1 \u221a(b\u00b2 \u2212 4ac)] \u00f7 2a\nSum of roots = \u2212b/a ; Product = c/a ; Discriminant D = b\u00b2 \u2212 4ac"],
+["Finance","Simple interest","SI = P \u00d7 r \u00d7 t \u00f7 100 ; Amount A = P + SI"],
+["Finance","Compound interest","A = P(1 + i)^n where i = r/100 per period ; CI = A \u2212 P\nEffective rate E = (1 + r/m)^m \u2212 1 ; Continuous: A = P\u00b7e^(rt)"],
+["Finance","Annuity (ordinary)","FV = C[(1+i)^n \u2212 1] \u00f7 i\nPV = C[1 \u2212 (1+i)^(\u2212n)] \u00f7 i ; Perpetuity PV = C \u00f7 i"],
+["Finance","Annuity due & sinking fund","FV due = C(1+i)[(1+i)^n \u2212 1] \u00f7 i ; PV due = C(1+i)[1 \u2212 (1+i)^(\u2212n)] \u00f7 i\nSinking fund = FV \u00d7 i \u00f7 [(1+i)^n \u2212 1]"],
+["Permutation","nPr, nCr","nPr = n! \u00f7 (n\u2212r)! ; nCr = n! \u00f7 [r!(n\u2212r)!] ; nCr = nC(n\u2212r)\nCircular arrangements of n = (n\u22121)!"],
+["Sequences","AP","a_n = a + (n\u22121)d ; S_n = n/2 [2a + (n\u22121)d]"],
+["Sequences","GP","a_n = a\u00b7r^(n\u22121) ; S_n = a(r^n \u2212 1) \u00f7 (r \u2212 1) for r > 1 ; S\u221e = a \u00f7 (1 \u2212 r) for |r| < 1"],
+["Sets","Union of two sets","n(A\u222aB) = n(A) + n(B) \u2212 n(A\u2229B)"],
+["Calculus","Differentiation / integration","d/dx x^n = n\u00b7x^(n\u22121) ; d/dx e^x = e^x ; d/dx ln x = 1/x\n\u222bx^n dx = x^(n+1)/(n+1) + C (n \u2260 \u22121)"],
+["Calculus","Product & quotient rule","(uv)' = u'v + uv' ; (u/v)' = (u'v \u2212 uv') \u00f7 v\u00b2"],
+["Logical reasoning","Direction sense","Shortest distance = \u221a(x\u00b2 + y\u00b2), x = net east\u2013west, y = net north\u2013south"],
+["Logical reasoning","Number series","Check: differences, ratios, squares / cubes, alternate series, +/\u2212 pattern"],
+["Statistics","Mean","Mean = \u03a3x \u00f7 n ; Weighted mean = \u03a3wx \u00f7 \u03a3w ; Step-deviation: A + (\u03a3fd \u00f7 \u03a3f) \u00d7 h"],
+["Statistics","Median & mode (grouped)","Median = L + [(N/2 \u2212 cf) \u00f7 f] \u00d7 h\nMode = L + [(f1 \u2212 f0) \u00f7 (2f1 \u2212 f0 \u2212 f2)] \u00d7 h ; Mode \u2248 3 Median \u2212 2 Mean"],
+["Statistics","GM and HM","GM = (x1\u00b7x2\u00b7...\u00b7xn)^(1/n) ; HM = n \u00f7 \u03a3(1/x)"],
+["Statistics","Dispersion","Range = H \u2212 L ; QD = (Q3 \u2212 Q1) \u00f7 2 ; MD = \u03a3|x \u2212 mean| \u00f7 n\nSD \u03c3 = \u221a[\u03a3x\u00b2/n \u2212 (mean)\u00b2] ; Variance = \u03c3\u00b2 ; CV = (\u03c3 \u00f7 mean) \u00d7 100"],
+["Statistics","Correlation","Pearson r = [n\u03a3xy \u2212 \u03a3x\u03a3y] \u00f7 \u221a{[n\u03a3x\u00b2 \u2212 (\u03a3x)\u00b2][n\u03a3y\u00b2 \u2212 (\u03a3y)\u00b2]}\nSpearman \u03c1 = 1 \u2212 6\u03a3d\u00b2 \u00f7 [n(n\u00b2 \u2212 1)]"],
+["Statistics","Regression","y on x: b_yx = r\u00b7\u03c3y \u00f7 \u03c3x ; x on y: b_xy = r\u00b7\u03c3x \u00f7 \u03c3y ; r\u00b2 = b_xy \u00d7 b_yx\ny \u2212 mean(y) = b_yx (x \u2212 mean(x))"],
+["Statistics","Probability","P(A) = favourable \u00f7 total ; P(A\u222aB) = P(A) + P(B) \u2212 P(A\u2229B)\nP(A|B) = P(A\u2229B) \u00f7 P(B) ; Independent: P(A\u2229B) = P(A)P(B)"],
+["Statistics","Binomial & Poisson","Binomial: P(r) = nCr p^r q^(n\u2212r) ; mean = np ; variance = npq\nPoisson: P(r) = e^(\u2212m) m^r \u00f7 r! ; mean = variance = m"],
+["Statistics","Normal distribution","Z = (x \u2212 \u03bc) \u00f7 \u03c3"],
+["Statistics","Index numbers","Laspeyres = \u03a3p1q0 \u00f7 \u03a3p0q0 \u00d7 100 ; Paasche = \u03a3p1q1 \u00f7 \u03a3p0q1 \u00d7 100\nFisher = \u221a(Laspeyres \u00d7 Paasche) ; Marshall\u2013Edgeworth = \u03a3p1(q0+q1) \u00f7 \u03a3p0(q0+q1) \u00d7 100"]],
+eco:[["Elasticity","Price elasticity of demand","Ed = % change in quantity demanded \u00f7 % change in price\nPoint: Ed = (\u0394Q/\u0394P) \u00d7 (P/Q)"],
+["Elasticity","Arc elasticity","Ed = (\u0394Q \u00f7 \u0394P) \u00d7 [(P1 + P2) \u00f7 (Q1 + Q2)]"],
+["Elasticity","Income & cross elasticity","Ey = % change in Q \u00f7 % change in income\nExy = % change in Qx \u00f7 % change in Py"],
+["Revenue","TR, AR, MR","TR = P \u00d7 Q ; AR = TR \u00f7 Q ; MR = \u0394TR \u00f7 \u0394Q ; MR = P(1 \u2212 1/Ed)"],
+["Cost","Total, average, marginal cost","TC = TFC + TVC ; AC = TC \u00f7 Q = AFC + AVC ; MC = \u0394TC \u00f7 \u0394Q"],
+["Production","Average and marginal product","AP = TP \u00f7 L ; MP = \u0394TP \u00f7 \u0394L"],
+["Profit","Profit and equilibrium","Profit = TR \u2212 TC ; Profit is maximum where MR = MC (MC rising)"],
+["Market","Perfect competition","Price = AR = MR ; firm is price taker"]]};
+
+/* ---------- answer frames (law, economics) ---------- */
+const FR={law:[["Issue","What is the legal question?"],["Legal provision","Section / Act / rule"],["Case law","Case name and the principle (if any)"],["Application","Apply the law to the facts given"],["Conclusion","Final answer in one line"]],
+ eco:[["Definition","Define the term / concept"],["Explanation","Points, in order"],["Diagram / example","Draw it in the Diagram pad, add an example"],["Conclusion","Wrap up"]]};
+
+/* ---------- tabs ---------- */
+function build(){$("pg").innerHTML='<div class="bar"><div class="tabs" id="tabs"></div><div class="tabs" id="subj"></div></div>'+Object.keys(TT).map(k=>'<div class="tp" id="t'+k+'" hidden></div>').join("")}
+function renderTabs(){const T=$("tabs");T.innerHTML="";BY[subj].forEach(id=>{const b=document.createElement("button");b.className=id===tab?"on":"";b.title=b.ariaLabel=TT[id];b.innerHTML=ic(IC[id]);b.onclick=()=>show(id);T.append(b)});
+ const S=$("subj");S.innerHTML="";Object.keys(SN).forEach(k=>{const b=document.createElement("button");b.className=k===subj?"on":"";b.title=b.ariaLabel=SN[k];b.innerHTML=ic(IC[k]);
+  b.onclick=()=>{subj=pgS.subj=k;pgSave();if(!BY[k].includes(tab))tab="n";renderTabs();show(tab)};S.append(b)})}
+function show(id){tab=id;document.querySelectorAll("#tabs button").forEach((b,i)=>b.classList.toggle("on",BY[subj][i]===id));
+ document.querySelectorAll(".tp").forEach(p=>p.hidden=p.id!=="t"+id);if(!built[id]){built[id]=1;FILL[id]()}else if(id==="a"||id==="r"||id==="d")FILL[id]();play()}
+function pgLoad(){try{pgS=JSON.parse(localStorage.getItem("pg:"+pgPath))||{}}catch(e){pgS={}}
+ pgS.notes=pgS.notes||"";pgS.cards=pgS.cards||[];pgS.cards.forEach(c=>{if(!c.id)c.id=uid()});pgS.fr=pgS.fr||{};pgS.dia=pgS.dia||{tpl:"ds",items:[]};
+ subj=pgS.subj||(BY[qsub]?qsub:"acc");if(!BY[subj])subj="acc";if(!BY[subj].includes(tab))tab="n";renderTabs();Object.keys(built).forEach(k=>REF[k]&&REF[k]());show(tab)}
+
+/* ---------- notes ---------- */
+FILL.n=()=>{$("tn").innerHTML='<textarea id="notes" placeholder="Working notes: write your workings here. Saved automatically for this question." aria-label="Working notes"></textarea>';
+ $("notes").oninput=()=>{pgS.notes=$("notes").value;pgSave()};REF.n=()=>{$("notes").value=pgS.notes};REF.n()};
+const addNote=t=>{pgS.notes=(pgS.notes?pgS.notes+"\n":"")+t;pgSave();if(built.n)REF.n()};
+
+/* ---------- formats (accounting) ---------- */
+const num=v=>parseFloat(String(v).replace(/,/g,""))||0,fm=n=>n.toLocaleString("en-IN",{maximumFractionDigits:2});
+function evalAmt(v){const t=String(v).trim().replace(/,/g,"");if(!/^[0-9+\-*\/().\s]+$/.test(t)||!/[+\-*\/]/.test(t.replace(/^-/,"")))return v;
+ try{const r=Function('"use strict";return ('+t+')')();return isFinite(r)?String(Math.round(r*100)/100):v}catch(e){return v}}
+function upT(d,c){const S=x=>x.reduce((a,r)=>a+num(r[1]),0),T=d.querySelectorAll(".tot"),tl=S(c.l);T[0].textContent=fm(tl);let sum=fm(tl),any=tl>0;
+ if(c.r){const tr=S(c.r),ok=Math.abs(tl-tr)<.005&&tl>0,x=d.querySelector(".chk");T[1].textContent=fm(tr);any=any||tr>0;
+  x.textContent=ok?"\u2713 Both sides tally":(tl||tr?"Difference: "+fm(Math.abs(tl-tr)):"");x.className="chk"+(ok?" ok":"");sum=fm(tl)+"  |  "+fm(tr)+(ok?"  \u2713":"")}
+ d.querySelector(".sum").textContent=any?sum:""}
+function syncCard(d){const c=d._c,bx=[...d.querySelectorAll(".rows")],rd=b=>[...b.children].map(r=>[r.children[1].value,r.children[2].value]);
+ c.l=rd(bx[0]);if(c.r&&bx[1])c.r=rd(bx[1]);pgSave();upT(d,c)}
+function rowEl(d,c,v){const r=document.createElement("div");r.className="r";
+ r.innerHTML='<button class="gp" title="Drag to move up / down (or to the other side)" aria-label="Drag row">'+ic(IC.grip)+'</button><input class="lb" placeholder="Particulars" aria-label="Particulars"><input class="am" inputmode="decimal" placeholder="Amount (1000+500 works)" aria-label="Amount"><button class="rx" title="Remove row" aria-label="Remove row">\u00d7</button>';
+ const [g,lb,am,x]=r.children;lb.value=v[0];am.value=v[1];lb.oninput=()=>syncCard(d);am.oninput=()=>syncCard(d);am.onchange=()=>{am.value=evalAmt(am.value);syncCard(d)};
+ x.onclick=()=>{r.remove();syncCard(d)};g.onpointerdown=e=>rowDrag(e,r,d);return r}
+const autoScroll=y=>{if(y<70)scrollBy(0,-14);else if(y>innerHeight-70)scrollBy(0,14)};
+function dragger(e,item,cls,move,done){e.preventDefault();e.stopPropagation();const g=e.currentTarget;try{g.setPointerCapture(e.pointerId)}catch(_){}item.classList.add(cls);
+ const mv=ev=>{autoScroll(ev.clientY);const el=document.elementFromPoint(ev.clientX,ev.clientY);if(el)move(el,ev)};
+ const up=()=>{item.classList.remove(cls);g.removeEventListener("pointermove",mv);g.removeEventListener("pointerup",up);g.removeEventListener("pointercancel",up);done()};
+ g.addEventListener("pointermove",mv);g.addEventListener("pointerup",up);g.addEventListener("pointercancel",up)}
+function rowDrag(e,row,d){dragger(e,row,"drag",(el,ev)=>{const over=el.closest(".r"),box=el.closest(".rows");
+ if(over&&over!==row&&d.contains(over)){const b=over.getBoundingClientRect();over.parentNode.insertBefore(row,ev.clientY<b.top+b.height/2?over:over.nextSibling)}
+ else if(!over&&box&&d.contains(box))box.append(row)},()=>syncCard(d))}
+function cardDrag(e,d){const C=$("cards");dragger(e,d,"dragging",(el,ev)=>{const over=el.closest(".acard");
+ if(over&&over!==d&&over.parentNode===C){const b=over.getBoundingClientRect();C.insertBefore(d,ev.clientY<b.top+b.height/2?over:over.nextSibling)}},()=>{pgS.cards=[...C.children].map(x=>x._c);pgSave()})}
+function cardEl(c){const d=document.createElement("div");d.className="acard"+(c.open?" open":"");d._c=c;
+ d.innerHTML='<div class="ah"><button class="gp" title="Drag to reorder formats" aria-label="Drag format">'+ic(IC.grip)+'</button><span class="ex">'+ic('<path d="M9 6l6 6-6 6"/>')+'</span><b></b><span class="sum"></span><button class="rm" title="Remove this format" aria-label="Remove this format">\u00d7</button></div>'+
+  '<div class="cbody"><div class="two"></div><div class="acts"><button class="bl" title="Add the balancing figure to the smaller side" aria-label="Add balancing figure">'+ic(IC.bal)+'<span>Balance</span></button></div><div class="chk"></div><details><summary>Format tip</summary><p></p></details></div>';
+ const head=d.querySelector(".ah");head.querySelector("b").textContent=c.n;d.querySelector("p").textContent=c.note||"";
+ head.onclick=e=>{if(e.target.closest(".rm,.gp"))return;c.open=!c.open;d.classList.toggle("open",c.open);pgSave()};
+ head.querySelector(".gp").onpointerdown=e=>cardDrag(e,d);
+ head.querySelector(".rm").onclick=()=>{pgS.cards=pgS.cards.filter(z=>z!==c);pgSave();d.remove()};
+ const two=d.querySelector(".two");if(!c.r){two.classList.add("one");d.querySelector(".chk").remove();d.querySelector(".bl").remove()}
+ [["l",c.r?c.a:"Particulars"]].concat(c.r?[["r",c.b]]:[]).forEach(([k,h])=>{const col=document.createElement("div");col.className="side";
+  col.innerHTML='<div class="sh"></div><div class="rows"></div><button class="add">+ row</button><div class="tot"></div>';col.querySelector(".sh").textContent=h;
+  const box=col.querySelector(".rows");c[k].forEach(v=>box.append(rowEl(d,c,v)));col.querySelector(".add").onclick=()=>{box.append(rowEl(d,c,["",""]));pgSave()};two.append(col)});
+ const bl=d.querySelector(".bl");if(bl)bl.onclick=()=>{syncCard(d);const S=x=>x.reduce((a,r)=>a+num(r[1]),0),tl=S(c.l),tr=S(c.r),diff=Math.round(Math.abs(tl-tr)*100)/100;if(!diff)return;
+  const left=tl<tr;d.querySelectorAll(".rows")[left?0:1].append(rowEl(d,c,[left?"To Balancing figure":"By Balancing figure",String(diff)]));syncCard(d)};
+ upT(d,c);return d}
+function renderCards(){const C=$("cards");C.innerHTML="";pgS.cards.forEach(c=>C.append(cardEl(c)))}
+function addCard(d){const [a,b]=d.lab.split("|"),lab=(t,s)=>t.startsWith("~")?t.slice(1):(s?"By ":"To ")+t;
+ pgS.cards.forEach(c=>c.open=false);pgS.cards.unshift({id:uid(),open:true,n:d.n,a,b,l:d.l.map(t=>[lab(t,0),""]),r:d.r?d.r.map(t=>[lab(t,1),""]):null,note:d.note});pgSave();renderCards();play()}
+FILL.f=()=>{$("tf").innerHTML='<input id="cmd" list="adl" placeholder="Command: account name (trading, revaluation, brs ...) then Enter" autocomplete="off" aria-label="Account command"><datalist id="adl">'+D.map(d=>'<option value="'+esc(d.n)+'">').join("")+'</datalist><div class="chips" id="chp"></div><div id="cards"></div>';
  const chips=l=>{$("chp").innerHTML=l.map(d=>'<span class="chip" data-n="'+esc(d.n)+'">'+esc(d.n)+"</span>").join("")};
  $("cmd").oninput=()=>{const v=$("cmd").value.trim();chips(v.length<2?[]:find(v).slice(0,8))};
  $("cmd").onkeydown=e=>{if(e.key!=="Enter")return;const v=$("cmd").value.trim();if(/^(list|all|\?|help)$/i.test(v)){chips(D);return}
   const m=find(v);if(!m.length){$("chp").textContent="No account found. Type list to see all.";return}addCard(m[0]);$("cmd").value="";chips([])};
- $("chp").onclick=e=>{const n=e.target.dataset.n;if(n){addCard(D.find(d=>d.n===n));$("cmd").value="";chips([])}};
- $("tc").onclick=e=>{const k=e.target.closest("button[data-k]");if(k){play("tick");press(k.dataset.k)}};cshow()}
-function addCard(d){const [a,b]=d.lab.split("|"),lab=(t,s)=>t.startsWith("~")?t.slice(1):(s?"By ":"To ")+t;
- pgS.cards.forEach(c=>c.open=false);pgS.cards.unshift({open:true,n:d.n,a,b,l:d.l.map(t=>[lab(t,0),""]),r:d.r?d.r.map(t=>[lab(t,1),""]):null,note:d.note});pgSave();renderCards();play("dir")}
-function upT(d,c){const S=x=>x.reduce((a,r)=>a+(parseFloat(String(r[1]).replace(/,/g,""))||0),0),f=n=>n.toLocaleString("en-IN",{maximumFractionDigits:2});
- const tl=S(c.l),T=d.querySelectorAll(".tot");T[0].textContent=f(tl);let sum=f(tl),any=tl>0;
- if(c.r){const tr=S(c.r),ok=Math.abs(tl-tr)<.005&&tl>0,x=d.querySelector(".chk");T[1].textContent=f(tr);any=any||tr>0;
-  x.textContent=ok?"\u2713 Both sides tally":(tl||tr?"Difference: "+f(Math.abs(tl-tr)):"");x.className="chk"+(ok?" ok":"");sum=f(tl)+"  |  "+f(tr)+(ok?"  \u2713":"")}
- d.querySelector(".sum").textContent=any?sum:""}
-function rowEl(arr,i,d,c){const r=document.createElement("div");r.className="r";
- r.innerHTML='<input class="lb" placeholder="Particulars" aria-label="Particulars"><input class="am" inputmode="decimal" placeholder="Amount" aria-label="Amount"><button class="rx" title="Remove row" aria-label="Remove row">\u00d7</button>';
- const [lb,am,x]=r.children;lb.value=arr[i][0];am.value=arr[i][1];
- lb.oninput=()=>{arr[i][0]=lb.value;pgSave()};am.oninput=()=>{arr[i][1]=am.value;pgSave();upT(d,c)};x.onclick=()=>{arr.splice(i,1);pgSave();renderCards()};return r}
-function renderCards(){const C=$("cards");C.innerHTML="";pgS.cards.forEach((c,ci)=>{const d=document.createElement("div");d.className="acard"+(c.open?" open":"");
- d.innerHTML='<div class="ah"><span class="ex"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span><b></b><span class="sum"></span><button class="rm" title="Remove this format" aria-label="Remove this format">\u00d7</button></div>'+
-  '<div class="cbody"><div class="two"></div><div class="chk"></div><details><summary>Format tip</summary><p></p></details></div>';
- const head=d.querySelector(".ah");head.querySelector("b").textContent=c.n;d.querySelector("p").textContent=c.note||"";
- head.onclick=e=>{if(e.target.closest(".rm"))return;c.open=!c.open;d.classList.toggle("open",c.open);pgSave()};
- head.querySelector(".rm").onclick=()=>{pgS.cards.splice(ci,1);pgSave();renderCards()};
- const two=d.querySelector(".two");if(!c.r){two.classList.add("one");d.querySelector(".chk").remove()}
- [["l",c.r?c.a:"Particulars"]].concat(c.r?[["r",c.b]]:[]).forEach(([k,h])=>{const col=document.createElement("div");col.className="side";
-  col.innerHTML='<div class="sh"></div><div class="rows"></div><button class="add">+ row</button><div class="tot"></div>';col.querySelector(".sh").textContent=h;
-  const rows=col.querySelector(".rows"),arr=c[k];arr.forEach((_,i)=>rows.append(rowEl(arr,i,d,c)));
-  col.querySelector(".add").onclick=()=>{arr.push(["",""]);rows.append(rowEl(arr,arr.length-1,d,c));pgSave()};two.append(col)});
- C.append(d);upT(d,c)})}
+ $("chp").onclick=e=>{const n=e.target.dataset.n;if(n){addCard(D.find(d=>d.n===n));$("cmd").value="";chips([])}};REF.f=renderCards;renderCards()};
 
+/* ---------- formulas ---------- */
+FILL.r=()=>{const L=FM[subj]||[],tops=["All"].concat([...new Set(L.map(x=>x[0]))]);let topic="All";
+ $("tr").innerHTML='<input id="fq" placeholder="Search formula ..." aria-label="Search formula"><div class="chips" id="ft"></div><div id="fl"></div>';
+ const draw=()=>{const q=$("fq").value.toLowerCase(),F=$("fl");F.innerHTML="";L.filter(x=>(topic==="All"||x[0]===topic)&&(x[1]+" "+x[2]).toLowerCase().includes(q)).forEach(x=>{
+   const d=document.createElement("div");d.className="fcard";d.innerHTML='<div><div class="fn"></div><pre></pre></div><button title="Add to working notes" aria-label="Add to working notes">'+ic(IC.plus)+'</button>';
+   d.querySelector(".fn").textContent=x[1];d.querySelector("pre").textContent=x[2];const b=d.querySelector("button");b.onclick=()=>{addNote(x[1]+": "+x[2].replace(/\n/g,"; "));b.classList.add("ok");setTimeout(()=>b.classList.remove("ok"),900)};F.append(d)})};
+ const ch=()=>{$("ft").innerHTML="";tops.forEach(t=>{const s=document.createElement("span");s.className="chip"+(t===topic?" on":"");s.textContent=t;s.onclick=()=>{topic=t;ch();draw()};$("ft").append(s)})};
+ $("fq").oninput=draw;ch();draw()};
+
+/* ---------- answer frame ---------- */
+FILL.a=()=>{const P=$("ta"),F=FR[subj]||[],arr=pgS.fr[subj]=pgS.fr[subj]||[];P.innerHTML="";
+ const wc=()=>{const n=arr.join(" ").trim().split(/\s+/).filter(Boolean).length;$("wc").textContent=n+" words"};
+ F.forEach(([h,ph],i)=>{const w=document.createElement("div");w.className="fld";w.innerHTML='<label></label><textarea></textarea>';w.firstChild.textContent=h;const t=w.lastChild;t.placeholder=ph;t.value=arr[i]||"";
+  const grow=()=>{t.style.height="auto";t.style.height=Math.max(76,t.scrollHeight+2)+"px"};t.oninput=()=>{arr[i]=t.value;pgSave();grow();wc()};P.append(w);setTimeout(grow,0)});
+ P.insertAdjacentHTML("beforeend",'<div class="acts"><span id="wc"></span><button id="cp" title="Copy the whole answer" aria-label="Copy answer">'+ic(IC.copy)+'</button><button id="cl" title="Clear this answer" aria-label="Clear answer">'+ic(IC.trash)+'</button></div>');
+ $("cp").onclick=()=>{const t=F.map(([h],i)=>h+":\n"+(arr[i]||"")).join("\n\n");try{navigator.clipboard.writeText(t)}catch(e){}$("cp").classList.add("on");setTimeout(()=>$("cp").classList.remove("on"),900)};
+ $("cl").onclick=()=>{if(confirm("Is answer ke saare boxes clear karne hain?")){pgS.fr[subj]=[];pgSave();FILL.a()}};wc();REF.a=FILL.a};
+
+/* ---------- diagram pad (economics) ---------- */
+const DCOL={k:"var(--ink)",b:"#3b82c4",r:"#d9534f",g:"#2f9e6b"};
+function dTpl(c,W,H,t,ink){const X0=.12*W,X1=.92*W,Y0=.88*H,Y1=.08*H,L=(a,b,x,y)=>{c.beginPath();c.moveTo(a*W,b*H);c.lineTo(x*W,y*H);c.stroke()},T=(s,x,y)=>c.fillText(s,x*W,y*H);
+ c.strokeStyle=ink;c.fillStyle=ink;c.lineWidth=2;c.font=Math.round(W/28)+"px Georgia";c.beginPath();c.moveTo(X0,Y1);c.lineTo(X0,Y0);c.lineTo(X1,Y0);c.stroke();
+ const xl={ax:["X","Y"],ds:["Quantity","Price"],ppc:["Good X","Good Y"],cost:["Output","Cost"]}[t];T(xl[0],.84,.95);T(xl[1],.02,.07);
+ if(t==="ds"){L(.2,.15,.85,.75);L(.2,.78,.85,.18);T("D",.86,.78);T("S",.86,.2);c.setLineDash([6,5]);L(.5413,.465,.5413,.88);L(.12,.465,.5413,.465);c.setLineDash([]);T("E",.56,.45);T("P*",.06,.48);T("Q*",.52,.95)}
+ if(t==="ppc"){c.beginPath();c.moveTo(X0,.2*H);c.quadraticCurveTo(.8*W,.2*H,.8*W,Y0);c.stroke();T("PPC",.62,.3)}
+ if(t==="cost"){c.beginPath();c.moveTo(.2*W,.2*H);c.quadraticCurveTo(.5*W,1.02*H,.85*W,.25*H);c.stroke();c.beginPath();c.moveTo(.2*W,.75*H);c.quadraticCurveTo(.62*W,.85*H,.9*W,.1*H);c.stroke();T("AC",.1,.2);T("MC",.86,.12)}}
+FILL.d=()=>{const P=$("td");let pen="k",mode="pen",cur=null;
+ P.innerHTML='<div class="dtools"><span class="tabs" id="dtp"></span><span class="sp"></span><button data-m="pen" class="on" title="Pen" aria-label="Pen">'+ic(IC.pen)+'</button><button data-m="txt" title="Add a text label" aria-label="Text label">'+ic(IC.txt)+'</button></div>'+
+  '<div class="dtools" id="dcol"></div><div class="dtools"><button id="dun" title="Undo" aria-label="Undo">'+ic(IC.undo)+'</button><button id="dcl" title="Clear my drawing" aria-label="Clear drawing">'+ic(IC.trash)+'</button></div><canvas id="dcv"></canvas>';
+ const cv=$("dcv"),css=k=>k==="k"?getComputedStyle(document.body).color:DCOL[k];
+ const draw=()=>{const d=Math.min(devicePixelRatio||1,2),W=cv.clientWidth,H=cv.clientHeight;if(!W)return;cv.width=W*d;cv.height=H*d;const c=cv.getContext("2d");c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,W,H);
+  dTpl(c,W,H,pgS.dia.tpl,getComputedStyle(document.body).color);c.lineCap="round";c.lineJoin="round";
+  pgS.dia.items.concat(cur?[cur]:[]).forEach(it=>{c.strokeStyle=c.fillStyle=css(it.c);if(it.t==="t"){c.font=Math.round(W/26)+"px Georgia";c.fillText(it.s,it.x*W,it.y*H)}else{c.lineWidth=2.5;c.beginPath();it.pts.forEach((p,i)=>i?c.lineTo(p[0]*W,p[1]*H):c.moveTo(p[0]*W,p[1]*H));if(it.pts.length===1)c.lineTo(it.pts[0][0]*W+.1,it.pts[0][1]*H);c.stroke()}})};
+ [["ax","Blank axes"],["ds","Demand & supply"],["ppc","Production possibility curve"],["cost","Cost curves (AC, MC)"]].forEach(([k,t])=>{const b=document.createElement("button");b.className=pgS.dia.tpl===k?"on":"";b.title=b.ariaLabel=t;b.innerHTML=ic(IC[k]);
+  b.onclick=()=>{pgS.dia.tpl=k;pgSave();document.querySelectorAll("#dtp button").forEach(x=>x.classList.toggle("on",x===b));draw()};$("dtp").append(b)});
+ P.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{mode=b.dataset.m;P.querySelectorAll("[data-m]").forEach(x=>x.classList.toggle("on",x===b))});
+ Object.keys(DCOL).forEach(k=>{const b=document.createElement("button");b.className="dc"+(k===pen?" on":"");b.style.background=css(k);b.title=k;b.onclick=()=>{pen=k;document.querySelectorAll("#dcol .dc").forEach(x=>x.classList.toggle("on",x===b))};$("dcol").append(b)});
+ const pt=e=>{const b=cv.getBoundingClientRect();return[(e.clientX-b.left)/b.width,(e.clientY-b.top)/b.height]};
+ cv.onpointerdown=e=>{e.preventDefault();const p=pt(e);if(mode==="txt"){const s=prompt("Label:");if(s){pgS.dia.items.push({t:"t",c:pen,x:p[0],y:p[1],s});pgSave();draw()}return}try{cv.setPointerCapture(e.pointerId)}catch(_){}cur={t:"s",c:pen,pts:[p]};draw()};
+ cv.onpointermove=e=>{if(cur){cur.pts.push(pt(e));draw()}};const up=()=>{if(cur){pgS.dia.items.push(cur);cur=null;pgSave();draw()}};cv.onpointerup=up;cv.onpointercancel=up;
+ $("dun").onclick=()=>{pgS.dia.items.pop();pgSave();draw()};$("dcl").onclick=()=>{if(confirm("Apna drawing clear karna hai?")){pgS.dia.items=[];pgSave();draw()}};
+ REF.d=draw;addEventListener("resize",()=>{if(!$("td").hidden)draw()});setTimeout(draw,0)};
+
+/* ---------- calculator ---------- */
 /*CALC*/
 const CL={e:"",acc:null,op:null,eq:false,mem:0,gt:0,steps:[],sel:-1,tape:false,err:false,sep:false,prev:"",lastOp:null,lastB:null};
 const SY={"+":"+","-":"\u2212","*":"\u00d7","/":"\u00f7"};
@@ -206,9 +349,13 @@ function calcHTML(){const B=(l,k,c)=>'<button data-k="'+k+'"'+(c?' class="'+c+'"
  B("4","4")+B("5","5")+B("6","6")+B("\u00d7","*")+B("\u00f7","/")+B("MRC","MRC","sm")+
  B("1","1")+B("2","2")+B("3","3")+B("+","+","p")+B("\u2212","-")+B("M\u2212","M-","sm")+
  B("0","0")+B("00","00")+B(".",".")+B("=","=")+B("M+","M+","sm")+'</div></div>'}
-addEventListener("keydown",e=>{if(!$("viewer").classList.contains("on")||!$("tc")||$("tc").hidden||/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
+addEventListener("keydown",e=>{if(!$("tc")||$("tc").hidden||/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
  const m={Enter:"=","=":"=",Backspace:"BS",Escape:"AC",Delete:"C","%":"PCT"}[e.key]||(/^[0-9.+\-*\/]$/.test(e.key)?e.key:null);if(m){e.preventDefault();press(m)}});
 
-function start(){pgPath=decodeURIComponent(location.hash.slice(1));pgInit();pgLoad()}
+
+FILL.c=()=>{$("tc").innerHTML=calcHTML();$("tc").onclick=e=>{const k=e.target.closest("button[data-k]");if(k){play();press(k.dataset.k)}};cshow()};
+
+build();
+function start(){pgPath=decodeURIComponent(location.hash.slice(1));pgLoad()}
 addEventListener("hashchange",start);start();
 </script></body></html>
