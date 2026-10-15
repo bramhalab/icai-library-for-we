@@ -1,0 +1,19 @@
+ICAI Foundation Library — merged update
+
+Merge basis
+- Preserved the user's latest index(4).html, playground(5).html, and game.html changes.
+- Kept the prior patched reader workspace, including the professional blue/white study UI, draggable PDF/practice splitter, question-eye toggle, PDF/JPG question+answer export, and safer backup import.
+- Kept the user's sound effects and mute toggle in the main library/playground; no new audio effects were added.
+
+Changes in this merged package
+1. index.html keeps the user's latest CA City game link, sound toggle, export/import, edition control, and visual design.
+2. PDF opening now passes the detected subject to reader.html so the practice workspace opens with the appropriate subject.
+3. reader.html has draggable desktop/mobile splitter with saved sizing, round eye toggle to show/hide the selected question image, and PDF/JPG export of question plus saved answer.
+4. playground.html keeps the latest uploaded formulas, formats, case notes, and customizations; selected-question mode locks the subject, and slash-command suggestions are no longer capped at 40 items. Search chips are no longer capped at 8.
+5. game.html is the user's latest uploaded game, included unchanged.
+
+Notes / limits
+- PDF export uses the browser print dialog; choose “Save as PDF”.
+- JPG export is a raster image and very long answers may be capped by canvas dimensions.
+- Browser storage capacity is a browser/device limit, not an intentional question/formula count cap.
+- This package is local source only. It does not deploy to GitHub Pages automatically.

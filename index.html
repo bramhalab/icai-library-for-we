@@ -73,7 +73,7 @@ iframe{flex:1;border:0;width:100%;background:#fff}
 <body>
 <div class="app">
   <div class="brand">CA Foundation Library<small>ICAI study material</small></div>
-  <div class="top"><button class="pill" id="fbtn" title="Folders" aria-label="Folders"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><input id="q" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="xw" title="Export ALL work (one JSON file)" aria-label="Export all work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/></svg></button><button class="pill" id="lw" title="Import work (.json)" aria-label="Import work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lwf" accept=".json,application/json" hidden><button class="pill" id="ed" title="Study material edition (click to change)" aria-label="Edition"></button><button class="pill" id="mute" title="Sound on / off" aria-label="Sound"></button></div>
+  <div class="top"><button class="pill" id="fbtn" title="Folders" aria-label="Folders"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><input id="q" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="xw" title="Export ALL work (one JSON file)" aria-label="Export all work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/></svg></button><button class="pill" id="lw" title="Import work (.json)" aria-label="Import work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lwf" accept=".json,application/json" hidden><a class="pill" href="game.html" id="gm" title="CA City game - learn by playing" aria-label="Game"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="7" width="19" height="11" rx="4"/><path d="M7 10.5v4M5 12.5h4"/><path d="M15.5 11.5h.01M18 13.5h.01" stroke-width="3"/></svg></a><button class="pill" id="ed" title="Study material edition (click to change)" aria-label="Edition"></button><button class="pill" id="mute" title="Sound on / off" aria-label="Sound"></button></div>
   <nav id="side" aria-label="Folders"></nav>
   <main id="main"></main>
 </div>
@@ -166,7 +166,12 @@ function closeV(){$("viewer").classList.remove("on");$("vf").src="about:blank"}
 
 /* ===== reader (reader.html) + ONE master work file (also kept in browser storage) ===== */
 let curPdf="";
-function loadReader(p){curPdf=p;const f=$("vf");f.src="about:blank";setTimeout(()=>{f.src="reader.html#"+encodeURIComponent(p)},30)}
+function subjectForPath(p){
+ const text=p.replace(/[_\-/.()]/g," ");
+ const rules=[[/\b(accounting|accounts?|acc)\b/i,"acc"],[/\b(business laws?|laws?)\b/i,"law"],[/\b(quantitative|aptitude|maths?|mathematics|statistics|stats?|logical|reasoning)\b/i,"qa"],[/\b(economics|eco|bck|commercial)\b/i,"eco"]];
+ for(const [re,id] of rules)if(re.test(text))return id;return "acc";
+}
+function loadReader(p){curPdf=p;const f=$("vf");f.src="about:blank";const subject=subjectForPath(p);setTimeout(()=>{f.src="reader.html?s="+encodeURIComponent(subject)+"#"+encodeURIComponent(p)},30)}
 const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 function collectAll(){const pdfs={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||k.slice(0,3)!=="rd:")continue;const p=k.slice(3),r=lsGet(k)||{};
   pdfs[p]={saved:r.saved||0,ann:r.ann||[],qs:(r.qs||[]).map(q=>({...q,work:lsGet("pg:"+p+"::"+q.id)||{}}))}}

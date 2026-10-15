@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>CA City - learn by running a business</title>
+<style>
+:root{--paper:#F3EEE2;--dark:#E8E0CC;--ink:#1E2A38;--soft:#4A5568;--ledger:#8C6B3F;--acc:#1E4D6B;--rule:#C9BEA0;--card:#FBF8F0;--ok:#2F6B4F;--bad:#B3492F}
+@media (prefers-color-scheme:dark){:root{--paper:#1b1f26;--dark:#252b34;--ink:#ece6d6;--soft:#a9b0bb;--ledger:#d2a869;--acc:#7fb8d9;--rule:#3a424e;--card:#222831;--ok:#6fcf97;--bad:#ff8a70}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{height:100%;margin:0;overflow:hidden;background:#6aa84f;font:15px/1.4 Georgia,serif;color:var(--ink);-webkit-user-select:none;user-select:none}
+button,select,input{font:inherit;color:inherit}button{cursor:pointer}
+#c{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none}
+#hud{position:fixed;left:0;right:0;top:0;padding:calc(6px + env(safe-area-inset-top,0px)) 6px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center;pointer-events:none;z-index:5}
+.pl{pointer-events:auto;background:var(--card);border:1.5px solid var(--ledger);border-radius:16px;padding:3px 10px;font:700 13px "Courier New",monospace;display:inline-flex;gap:6px;align-items:center;box-shadow:0 2px 0 #0004;color:var(--ink);text-decoration:none}
+button.pl{height:32px}
+.bar{width:60px;height:8px;background:var(--rule);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc)}
+#reqs{position:fixed;left:6px;bottom:calc(64px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column-reverse;gap:6px;z-index:5;max-width:min(60vw,230px)}
+.rq{display:flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--ledger);border-radius:10px;padding:5px 8px;font:13px Georgia,serif;text-align:left;box-shadow:0 2px 0 #0004}
+.rq b{font-size:20px}.rq .t{height:5px;background:var(--rule);border-radius:3px;overflow:hidden;margin-top:3px;width:100px}.rq .t i{display:block;height:100%}
+#tip{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#000a;color:#fff;border-radius:14px;padding:6px 14px;font-size:13px;z-index:5;pointer-events:none;text-align:center;max-width:92vw}
+#toast{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom,0px));transform:translate(-50%,0);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;opacity:0;transition:.3s;z-index:70;pointer-events:none;max-width:88vw;text-align:center;font-size:15px}#toast.on{opacity:1}
+#modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:50;padding:8px}#modal.on{display:flex}
+#card{background:var(--card);max-width:600px;width:100%;max-height:94vh;overflow:auto;border:2px solid var(--ledger);border-radius:12px;padding:14px 14px 18px;-webkit-user-select:text;user-select:text;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#card h2{margin:0;font:700 19px Palatino,Georgia,serif;color:var(--acc)}#card .hd{display:flex;gap:8px;align-items:center;margin-bottom:8px}#card .hd span{flex:1}
+#card .q{font-size:16.5px;line-height:1.5;background:var(--paper);border-left:4px solid var(--ledger);padding:8px 10px;margin:6px 0 10px}
+#card label{display:block;font:700 12px "Courier New",monospace;color:var(--ledger);margin:8px 0 3px;text-transform:uppercase}
+#card select,#card input[type=text],#card input[type=number]{width:100%;padding:9px 8px;border:1.5px solid var(--rule);background:var(--paper);border-radius:6px;font-size:16px}
+#card input[type=range]{width:100%}
+.btn{background:var(--acc);color:var(--paper);border:0;padding:9px 16px;border-radius:6px;box-shadow:0 2px 0 var(--ink);font:700 14px Georgia,serif;margin:8px 6px 0 0}.btn.g{background:transparent;color:var(--acc);border:1.5px solid var(--acc);box-shadow:none}.btn.ok{background:var(--ok)}
+.opt{display:block;width:100%;text-align:left;background:var(--paper);border:1.5px solid var(--rule);border-radius:8px;padding:10px;margin:6px 0;font:15px Georgia,serif}.opt:active{background:var(--dark)}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--paper))}.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,var(--paper))}
+.res{border-radius:8px;padding:10px;margin:10px 0;font-size:15px}.res.ok{background:color-mix(in srgb,var(--ok) 18%,var(--paper));border:1.5px solid var(--ok)}.res.bad{background:color-mix(in srgb,var(--bad) 18%,var(--paper));border:1.5px solid var(--bad)}
+.why{background:var(--paper);border:1px dashed var(--ledger);padding:8px 10px;border-radius:8px;font-size:14.5px;margin-top:6px}
+table.tb{width:100%;border-collapse:collapse;font:13px "Courier New",monospace}table.tb td,table.tb th{border:1px solid var(--rule);padding:4px 6px;text-align:right}table.tb td:first-child,table.tb th:first-child{text-align:left}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mut{color:var(--soft);font-size:13px}
+.big{font:700 28px "Courier New",monospace}
+.pill2{display:inline-block;border:1px solid var(--ledger);color:var(--ledger);border-radius:10px;padding:0 8px;font:11px "Courier New",monospace}
+.sb{height:10px;background:var(--rule);border-radius:5px;overflow:hidden}.sb i{display:block;height:100%;background:var(--ok)}
+</style></head><body>
+<canvas id="c"></canvas>
+<div id="hud"><a class="pl" href="index.html" title="Back to library">&larr;</a><span class="pl" id="hDay"></span><span class="pl" id="hCash"></span><span class="pl" id="hRep"></span><span class="pl" id="hLv"></span><span class="pl" id="hStk"></span><button class="pl" id="bHelp">?</button><button class="pl" id="bSnd"></button><button class="pl" id="bHome">Home</button></div>
+<div id="reqs"></div><div id="tip"></div><div id="toast"></div>
+<div id="modal"><div id="card"></div></div>
+<script>
+const $=id=>document.getElementById(id),rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),pick=a=>a[rnd(0,a.length-1)],shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const Rs=n=>"₹"+Math.round(n).toLocaleString("en-IN"),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+/* ============ save ============ */
+const SK="ca_city_v1";
+const fresh=()=>({day:1,cash:1000,xp:0,rep:3,streak:0,best:0,boots:0,clock:0,hints:2,stats:{acc:[0,0],law:[0,0],qa:[0,0],eco:[0,0]},ledger:{},topics:{},tut:0,dayStart:1000,seen:{}});
+let S;try{S=Object.assign(fresh(),JSON.parse(localStorage.getItem(SK))||{})}catch(e){S=fresh()}
+const save=()=>{try{localStorage.setItem(SK,JSON.stringify(S))}catch(e){}};
+const lvl=()=>1+Math.floor(S.xp/100),diff=()=>Math.min(5,lvl());
+/* ============ sound ============ */
+let ac;const muted=()=>localStorage.getItem("mute")==="1";
+function tone(f,d,type="triangle",v=.15,t0=0){if(muted())return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+t0;o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const sOk=()=>{tone(660,.15);tone(880,.2,"triangle",.15,.1);tone(1320,.3,"triangle",.1,.2)},sBad=()=>{tone(200,.3,"sawtooth",.1);tone(150,.3,"sawtooth",.1,.15)},sPing=()=>{tone(1000,.1,"sine",.12);tone(1500,.15,"sine",.1,.1)},sStep=()=>tone(1800,.03,"square",.03);
+$("bSnd").onclick=()=>{localStorage.setItem("mute",muted()?"0":"1");$("bSnd").textContent=muted()?"🔇":"🔊";sPing()};$("bSnd").textContent=muted()?"🔇":"🔊";
+/* ============ world ============ */
+const COLS=36,ROWS=26,SUBJ={acc:{n:"Accounts",e:"🧾"},law:{n:"Business Law",e:"⚖️"},qa:{n:"Quant",e:"📊"},eco:{n:"Economics",e:"📈"}};
+const B=[
+ {id:"shop",x:2,y:7,w:7,h:5,n:"Ledger & Co.",e:"🧾",subj:"acc",wall:"#e8d3a3",roof:"#b5522d",top:1},
+ {id:"bank",x:13,y:7,w:7,h:5,n:"City Bank",e:"🏦",subj:"acc",wall:"#d7dde6",roof:"#2f5d8a",top:1},
+ {id:"court",x:25,y:7,w:7,h:5,n:"Court House",e:"⚖️",subj:"law",wall:"#e4e0d6",roof:"#6b4f8a",top:1},
+ {id:"market",x:2,y:14,w:7,h:5,n:"Bazaar",e:"🛒",subj:"eco",wall:"#f1d9b5",roof:"#2f7d4f",top:0},
+ {id:"academy",x:13,y:14,w:7,h:5,n:"Maths Academy",e:"📚",subj:"qa",wall:"#dfe8d2",roof:"#c18a1d",top:0},
+ {id:"home",x:25,y:14,w:7,h:5,n:"Home",e:"🏠",subj:null,wall:"#f3e1e1",roof:"#8a3b3b",top:0}];
+B.forEach(b=>{b.dx=b.x+3;b.dy=b.top?b.y+b.h-1:b.y;b.fy=b.top?b.dy+1:b.dy-1});
+const g=[];for(let y=0;y<ROWS;y++){g.push(new Array(COLS).fill(0))}
+const road=(x,y)=>x>=0&&y>=0&&x<COLS&&y<ROWS&&g[y][x]===1;
+for(let x=0;x<COLS;x++){g[12][x]=1;g[13][x]=1}
+[10,11,21,22,33,34].forEach(x=>{for(let y=0;y<ROWS;y++)g[y][x]=1});
+B.forEach(b=>{for(let y=b.y;y<b.y+b.h;y++)for(let x=b.x;x<b.x+b.w;x++)g[y][x]=3;g[b.dy][b.dx]=4});
+const hs=(x,y)=>{let h=x*374761393+y*668265263;h=(h^(h>>13))*1274126177;return((h^(h>>16))>>>0)/4294967295};
+for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)if(g[y][x]===0){const nearB=B.some(b=>x>=b.x-1&&x<=b.x+b.w&&y>=b.y-1&&y<=b.y+b.h);if(!nearB&&hs(x,y)>.9)g[y][x]=2}
+const blocked=(x,y)=>x<0||y<0||x>=COLS||y>=ROWS||g[y][x]===2||g[y][x]===3;
+const bAtTile=(x,y)=>B.find(b=>x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h);
+/* player */
+const P={x:15.5,y:12.5,dir:0,step:0,mv:false,path:[]};let keys={};
+const speed=()=>3.8*(1+.25*S.boots);
+function tryMove(dx,dy){const r=.27;const ok=(x,y)=>!blocked(Math.floor(x-r),Math.floor(y-r))&&!blocked(Math.floor(x+r),Math.floor(y-r))&&!blocked(Math.floor(x-r),Math.floor(y+r))&&!blocked(Math.floor(x+r),Math.floor(y+r));
+ let m=false;if(ok(P.x+dx,P.y)){P.x+=dx;m=true}if(ok(P.x,P.y+dy)){P.y+=dy;m=true}return m}
+function bfs(sx,sy,tx,ty){if(blocked(tx,ty))return null;const q=[[sx,sy]],pv={},k=(x,y)=>y*COLS+x;pv[k(sx,sy)]=-1;
+ while(q.length){const[x,y]=q.shift();if(x===tx&&y===ty){const p=[];let c=k(x,y);while(c!==-1){p.unshift([c%COLS+.5,Math.floor(c/COLS)+.5]);c=pv[c]}p.shift();return p}
+  for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(blocked(nx,ny)||pv[k(nx,ny)]!==undefined)continue;pv[k(nx,ny)]=k(x,y);q.push([nx,ny])}}return null}
+function goTo(tx,ty){const b=bAtTile(tx,ty);if(b){tx=b.dx;ty=b.dy}const p=bfs(Math.floor(P.x),Math.floor(P.y),tx,ty);if(p){P.path=p}else toast("Can't walk there")}
+/* ambient citizens */
+const roads=[];for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)if(g[y][x]===1)roads.push([x,y]);
+const CIT=Array.from({length:9},(_,i)=>{const[x,y]=pick(roads);return{x:x+.5,y:y+.5,tx:x+.5,ty:y+.5,sp:.8+Math.random()*.8,st:i%6,dir:0,st2:Math.random()*9}});
+/* requests */
+let R=[],rid=0,paused=false,spawnT=4,toastT=0;
+const maxReq=()=>2+(diff()>=3?1:0)+(diff()>=5?1:0),patience=()=>Math.max(40,85-diff()*6)*(1+.3*S.clock),spawnEvery=()=>Math.max(7,15-diff());
+const BASE={acc:150,bank:230,eco:250,law:200,qa:180};
+function spawn(){if(R.length>=maxReq())return;const free=B.filter(b=>b.subj&&!R.find(r=>r.b===b));if(!free.length)return;const b=pick(free);R.push({id:++rid,b,t:0,pat:patience()});sPing();toast(b.e+" Customer at "+b.n+"!");renderReqs()}
+function renderReqs(){const el=$("reqs");el.innerHTML="";R.forEach(r=>{const f=1-r.t/r.pat,bt=document.createElement("button");bt.className="rq";bt.dataset.id=r.id;bt.innerHTML="<b>"+r.b.e+"</b><span>"+r.b.n+"<div class='t'><i style='width:"+(f*100)+"%;background:"+(f>.5?"#2f9e6b":f>.25?"#e0a800":"#d9534f")+"'></i></div></span>";bt.onclick=()=>{goTo(r.b.dx,r.b.dy);sStep()};el.append(bt)})}
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove("on"),2200)}
+/* ============ HUD ============ */
+function hud(){const hr=8+12*S.t/DAY,h=Math.floor(hr),m=Math.floor((hr-h)*60/5)*5;$("hDay").textContent="Day "+S.day+" ⏰ "+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
+ $("hCash").textContent=Rs(S.cash)+" / goal "+Rs(goal());$("hRep").textContent="★".repeat(Math.round(S.rep))+"☆".repeat(5-Math.round(S.rep));
+ $("hLv").innerHTML="Lv "+lvl()+" <span class='bar'><i style='width:"+(S.xp%100)+"%'></i></span>";$("hStk").textContent="🔥 "+S.streak+" x"+(1+Math.min(S.streak,10)*.1).toFixed(1)}
+const DAY=300,goal=()=>S.dayStart+1000+300*S.day;S.t=0;
+/* ============ rendering ============ */
+const cv=$("c"),cx=cv.getContext("2d");let T=48,W=0,H=0,camx=P.x,camy=P.y,dpr=1;
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;T=clamp(Math.min(W,H)/9,34,64)}addEventListener("resize",resize);resize();
+const SK_COL=["#e0a96d","#f1c27d","#c68642","#8d5524","#ffdbac","#d9a066"],SH=["#d9534f","#3b82c4","#2f9e6b","#e0a800","#8a5bd0","#e67e22"];
+function person(x,y,col,dir,step,hair,player){const c=cx,s=T,px=x*s,py=y*s,bob=Math.sin(step*10)*(step?s*.03:0),lg=Math.sin(step*10)*(step?s*.08:0);
+ c.fillStyle="#0003";c.beginPath();c.ellipse(px,py+s*.3,s*.22,s*.08,0,0,7);c.fill();
+ c.fillStyle="#2b3a55";c.fillRect(px-s*.14,py+s*.1+lg*.5,s*.11,s*.2);c.fillRect(px+s*.03,py+s*.1-lg*.5,s*.11,s*.2);
+ c.fillStyle=col;c.fillRect(px-s*.19,py-s*.17+bob,s*.38,s*.3);c.fillStyle=SK_COL[hair%6];c.fillRect(px-s*.26,py-s*.13+bob+lg*.3,s*.07,s*.22);c.fillRect(px+s*.19,py-s*.13+bob-lg*.3,s*.07,s*.22);
+ if(player){c.fillStyle="#fff";c.fillRect(px-s*.04,py-s*.17+bob,s*.08,s*.2);c.fillStyle="#7a1f1f";c.fillRect(px-s*.02,py-s*.15+bob,s*.04,s*.14)}
+ c.fillStyle=SK_COL[hair%6];c.beginPath();c.arc(px,py-s*.3+bob,s*.16,0,7);c.fill();c.fillStyle=player?"#3a2a1a":["#222","#5a3a1a","#999","#c0392b","#2c1810","#e8c872"][hair%6];c.beginPath();c.arc(px,py-s*.35+bob,s*.16,Math.PI,0);c.fill();
+ c.fillStyle="#222";const ex=dir===2?-s*.07:dir===3?s*.07:0;if(dir!==1){c.fillRect(px-s*.07+ex,py-s*.3+bob,s*.04,s*.04);c.fillRect(px+s*.03+ex,py-s*.3+bob,s*.04,s*.04)}}
+function tree(x,y){const c=cx,s=T,px=x*s+s/2,py=y*s+s*.8;c.fillStyle="#0002";c.beginPath();c.ellipse(px,py,s*.3,s*.1,0,0,7);c.fill();c.fillStyle="#6b4423";c.fillRect(px-s*.06,py-s*.35,s*.12,s*.35);const cl=["#2e7d32","#388e3c","#43a047"];[[0,-.62,.3],[-.17,-.45,.22],[.17,-.45,.22]].forEach((q,i)=>{c.fillStyle=cl[i];c.beginPath();c.arc(px+q[0]*s,py+q[1]*s,q[2]*s,0,7);c.fill()})}
+function building(b){const c=cx,s=T,x=b.x*s,y=b.y*s,w=b.w*s,h=b.h*s,rh=h*.34;
+ c.fillStyle="#0003";c.fillRect(x+4,y+4,w,h);c.fillStyle=b.wall;c.fillRect(x,y+rh,w,h-rh);c.fillStyle=b.roof;c.beginPath();c.moveTo(x-s*.2,y+rh);c.lineTo(x+s*.4,y);c.lineTo(x+w-s*.4,y);c.lineTo(x+w+s*.2,y+rh);c.fill();
+ c.fillStyle="#0002";for(let i=0;i<6;i++)c.fillRect(x-s*.2+i*(w+s*.4)/6,y+rh-s*.12,(w+s*.4)/12,s*.12);
+ c.fillStyle="#9ecbe8";const ry=b.top?y+rh+s*.25:y+rh+s*.25;[1,2,4,5].forEach(i=>{const wx=x+i*s+s*.2;c.fillRect(wx,ry,s*.6,s*.7);c.strokeStyle="#fff8";c.lineWidth=2;c.strokeRect(wx,ry,s*.6,s*.7);c.beginPath();c.moveTo(wx+s*.3,ry);c.lineTo(wx+s*.3,ry+s*.7);c.stroke()});
+ const dx=b.dx*s,dy=b.dy*s;c.fillStyle="#5a3a1a";c.fillRect(dx+s*.12,dy+s*.05,s*.76,s*.95);c.fillStyle="#f1c40f";c.fillRect(dx+s*.7,dy+s*.55,s*.07,s*.07);
+ const sw=Math.min(w-s*.8,s*5.4),sx=x+(w-sw)/2,sy=y+rh+s*1.15;c.fillStyle="#2b2b2b";c.fillRect(sx,sy,sw,s*.62);c.strokeStyle="#f1c40f";c.lineWidth=2;c.strokeRect(sx+2,sy+2,sw-4,s*.62-4);
+ c.fillStyle="#fff";c.font="bold "+Math.round(s*.34)+"px Georgia";c.textAlign="center";c.textBaseline="middle";c.fillText(b.e+" "+b.n,sx+sw/2,sy+s*.33)}
+function bubble(x,y,r,t){const c=cx,s=T,px=x*s,py=y*s-s*.85+Math.sin(t*5)*s*.04,f=1-r.t/r.pat;c.fillStyle="#fff";c.strokeStyle="#222";c.lineWidth=2;c.beginPath();c.arc(px,py,s*.3,0,7);c.fill();c.stroke();
+ c.beginPath();c.moveTo(px-s*.07,py+s*.28);c.lineTo(px,py+s*.42);c.lineTo(px+s*.07,py+s*.28);c.fill();c.strokeStyle=f>.5?"#2f9e6b":f>.25?"#e0a800":"#d9534f";c.lineWidth=4;c.beginPath();c.arc(px,py,s*.36,-Math.PI/2,-Math.PI/2+Math.PI*2*f);c.stroke();
+ c.font=Math.round(s*.34)+"px serif";c.textAlign="center";c.textBaseline="middle";c.fillStyle="#000";c.fillText(r.b.e,px,py+1)}
+let tm=0;
+function draw(){const c=cx;c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
+ const wx=COLS*T,wy=ROWS*T;let ox=W/2-camx*T,oy=H/2-camy*T;ox=wx<=W?(W-wx)/2:clamp(ox,W-wx,0);oy=wy<=H?(H-wy)/2:clamp(oy,H-wy,0);c.save();c.translate(Math.round(ox),Math.round(oy));
+ const x0=Math.max(0,Math.floor(-ox/T)),x1=Math.min(COLS-1,Math.ceil((W-ox)/T)),y0=Math.max(0,Math.floor(-oy/T)),y1=Math.min(ROWS-1,Math.ceil((H-oy)/T));
+ for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const t=g[y][x],px=x*T,py=y*T;
+  if(t===1){c.fillStyle="#555b64";c.fillRect(px,py,T,T);c.fillStyle="#c9c2b0";const e=Math.max(3,T*.08);if(!road(x,y-1)&&g[y-1]?.[x]!==4)c.fillRect(px,py,T,e);if(!road(x,y+1))c.fillRect(px,py+T-e,T,e);if(!road(x-1,y))c.fillRect(px,py,e,T);if(!road(x+1,y))c.fillRect(px+T-e,py,e,T);
+   c.fillStyle="#f1e9c0";if(y===12&&x%2===0)c.fillRect(px+T*.2,py+T-2,T*.6,3);if((x===10||x===21||x===33)&&y%2===0&&(y<12||y>13))c.fillRect(px+T-2,py+T*.2,3,T*.6)}
+  else{c.fillStyle=(x+y)%2?"#6aa84f":"#66a34b";c.fillRect(px,py,T,T);const h=hs(x,y);if(h<.35){c.fillStyle="#5b9443";c.fillRect(px+h*T*2,py+hs(y,x)*T*.8,3,5)}if(h>.6&&h<.66){c.fillStyle="#ffeb3b";c.fillRect(px+T*.4,py+T*.4,4,4);c.fillStyle="#fff";c.fillRect(px+T*.4+4,py+T*.4,3,4)}}}
+ B.forEach(b=>{if(b.x+b.w>=x0&&b.x<=x1)building(b)});
+ /* glow on door of requested buildings */
+ R.forEach(r=>{c.fillStyle="rgba(255,235,59,"+(.25+.2*Math.sin(tm*6))+")";c.fillRect(r.b.dx*T,r.b.fy*T,T,T)});
+ const items=[];for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(g[y][x]===2)items.push({y:y+.8,f:()=>tree(x,y)});
+ CIT.forEach(n=>items.push({y:n.y,f:()=>person(n.x,n.y,SH[n.st],n.dir,n.mv?n.st2:0,n.st)}));
+ R.forEach(r=>{const cxp=r.b.dx+.5+(r.b.top?1.2:-1.2),cyp=r.b.fy+.5+(r.b.top?.1:-.1),k=r.b.id.length;items.push({y:cyp,f:()=>{person(cxp,cyp,SH[(r.id+2)%6],r.b.top?2:3,0,r.id+k);bubble(cxp,cyp-.2,r,tm)}})});
+ items.push({y:P.y,f:()=>{person(P.x,P.y,"#1E4D6B",P.dir,P.mv?P.step:0,2,true)}});
+ items.sort((a,b)=>a.y-b.y).forEach(i=>i.f());
+ /* path marker */
+ if(P.path.length){const l=P.path[P.path.length-1];c.strokeStyle="#fff";c.lineWidth=3;c.setLineDash([6,5]);c.beginPath();c.arc(l[0]*T,l[1]*T,T*.28+Math.sin(tm*8)*2,0,7);c.stroke();c.setLineDash([])}
+ c.restore();ctxOff={x:Math.round(ox),y:Math.round(oy)}}
+let ctxOff={x:0,y:0};
+/* ============ loop ============ */
+let last=performance.now(),hudT=0,nearB=null;
+function nearDoor(){return B.find(b=>Math.abs(P.x-(b.dx+.5))<1.3&&Math.abs(P.y-(b.dy+.5))<1.3)}
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;tm+=dt;
+ if(!paused){
+  let ix=(keys.ArrowRight||keys.d||keys.D?1:0)-(keys.ArrowLeft||keys.a||keys.A?1:0),iy=(keys.ArrowDown||keys.s||keys.S?1:0)-(keys.ArrowUp||keys.w||keys.W?1:0);
+  P.mv=false;
+  if(ix||iy){P.path=[];const l=Math.hypot(ix,iy),d=speed()*dt;P.mv=tryMove(ix/l*d,iy/l*d);P.dir=Math.abs(ix)>Math.abs(iy)?(ix>0?3:2):(iy>0?0:1)}
+  else if(P.path.length){const[tx,ty]=P.path[0],dx=tx-P.x,dy=ty-P.y,dd=Math.hypot(dx,dy),d=speed()*dt;if(dd<=d){P.x=tx;P.y=ty;P.path.shift()}else{const m=tryMove(dx/dd*d,dy/dd*d);if(!m)P.path=[];P.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?3:2):(dy>0?0:1)}P.mv=true}
+  if(P.mv){P.step+=dt;if(Math.floor(P.step*4)!==Math.floor((P.step-dt)*4))sStep()}
+  S.t+=dt;if(S.t>=DAY){endDay();}
+  R.forEach(r=>r.t+=dt);const ex=R.filter(r=>r.t>=r.pat);if(ex.length){ex.forEach(r=>{S.rep=clamp(S.rep-.4,0,5);S.streak=0;toast("😞 "+r.b.n+": customer left unhappy");sBad()});R=R.filter(r=>r.t<r.pat);renderReqs();save();checkBroke()}
+  spawnT-=dt;if(spawnT<=0){spawnT=spawnEvery();spawn()}
+  CIT.forEach(n=>{const dx=n.tx-n.x,dy=n.ty-n.y,dd=Math.hypot(dx,dy);n.mv=dd>.05;if(dd<.06){const t=pick(roads.filter(r=>Math.abs(r[0]-n.x)+Math.abs(r[1]-n.y)<8));n.tx=t[0]+.5;n.ty=t[1]+.5}else{n.x+=dx/dd*n.sp*dt;n.y+=dy/dd*n.sp*dt;n.st2+=dt;n.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?3:2):(dy>0?0:1)}});
+  const d=nearDoor();nearB=d;const bd=B.find(b=>Math.floor(P.x)===b.dx&&Math.floor(P.y)===b.dy);if(bd)enter(bd);
+  hudT-=dt;if(hudT<=0){hudT=.4;hud();if(R.length)renderReqs()}
+  $("tip").textContent=nearB?"Walk into the door of "+nearB.n+" (or press E)":"Tap the map / WASD to walk. Go to the yellow-glow buildings with a ❓ customer.";
+ }
+ camx+=(P.x-camx)*Math.min(1,dt*6);camy+=(P.y-camy)*Math.min(1,dt*6);draw();requestAnimationFrame(frame)}
+/* input */
+addEventListener("keydown",e=>{if(paused){if(e.key==="Enter"&&$("go")&&document.activeElement.tagName!=="INPUT"&&document.activeElement.tagName!=="SELECT")$("go").click();return}keys[e.key]=true;if((e.key==="e"||e.key==="E"||e.key===" "||e.key==="Enter")&&nearB)enter(nearB);if(/^Arrow/.test(e.key))e.preventDefault()});
+addEventListener("keyup",e=>{keys[e.key]=false});addEventListener("blur",()=>keys={});
+cv.addEventListener("pointerdown",e=>{if(paused)return;try{ac&&ac.resume()}catch(_){}const x=(e.clientX-ctxOff.x)/T,y=(e.clientY-ctxOff.y)/T;goTo(Math.floor(x),Math.floor(y))});
+/* ============ modal ============ */
+const card=$("card");
+function openM(html){paused=true;P.path=[];keys={};card.innerHTML=html;$("modal").classList.add("on");card.scrollTop=0}
+function closeM(){$("modal").classList.remove("on");paused=false;last=performance.now();const b=cur&&cur.b;if(b){P.x=b.dx+.5;P.y=b.fy+.5}cur=null;hud();renderReqs();save()}
+let cur=null,hintUsed=false,MD=null;
+const hd=(b,t)=>'<div class="hd"><span><h2>'+(b?b.e+" "+b.n:"")+(t?" - "+t:"")+'</h2></span><button class="btn g" id="lv" style="margin:0">Leave</button></div>';
+const bindLeave=()=>{const l=$("lv");if(l)l.onclick=closeM};
+function enter(b){if(paused)return;sPing();if(b.id==="home")return modHome(b);const r=R.find(z=>z.b===b);cur={b,r,live:!!r,subj:b.subj};hintUsed=false;
+ if(!r)toast("No customer here - practice mode (smaller reward)");
+ ({shop:modAcc,bank:modBank,court:modLaw,market:modEco,academy:modQa})[b.id](cur)}
+function hintBtn(txt){return'<button class="btn g" id="hint">💡 Hint ('+(S.hints>0?S.hints+" free":"₹50")+')</button><div id="hbox" class="why" hidden>'+txt+'</div>'}
+function bindHint(){const h=$("hint");if(!h)return;h.onclick=()=>{if($("hbox").hidden){if(S.hints>0)S.hints--;else if(S.cash>=50)S.cash-=50;else{toast("Not enough cash for a hint");return}hintUsed=true;$("hbox").hidden=false;h.disabled=true;save()}}}
+/* reward + result */
+function finish(ok,tag,base,why,extra){const c=cur,live=c.live;let msg="";const sj=c.subj;S.stats[sj][1]++;S.topics[tag]=S.topics[tag]||[0,0];S.topics[tag][1]++;
+ if(ok){S.stats[sj][0]++;S.topics[tag][0]++;S.streak++;S.best=Math.max(S.best,S.streak);const mult=(1+.1*(diff()-1))*(1+Math.min(S.streak-1,10)*.1)*(live?1:.4)*(hintUsed?.7:1),cash=Math.round(base*mult/10)*10,xp=Math.round((live?18:7)*(hintUsed?.7:1)+Math.min(S.streak,5));
+  S.cash+=cash;const L0=lvl();S.xp+=xp;S.rep=clamp(S.rep+(live?.2:.05),0,5);msg='<div class="res ok"><b>✅ Correct!</b> +'+Rs(cash)+' &nbsp; +'+xp+' XP &nbsp; 🔥 streak '+S.streak+(lvl()>L0?'<br><b>⬆ LEVEL UP! Problems get harder, rewards bigger.</b>':'')+'</div>';sOk()}
+ else{S.streak=0;S.xp+=3;S.rep=clamp(S.rep-(live?.35:.1),0,5);msg='<div class="res bad"><b>❌ Not quite.</b> +3 XP for trying. Read the explanation - it comes back later.</div>';sBad()}
+ if(live)R=R.filter(r=>r!==c.r);save();renderReqs();hud();
+ card.innerHTML=hd(c.b,"result")+msg+'<div class="why">'+why+'</div>'+(extra||"")+'<button class="btn" id="go">Continue</button><button class="btn g" id="again">Practice again</button>';bindLeave();$("go").onclick=()=>{closeM();checkBroke()};$("again").onclick=()=>{const b=c.b;cur=null;paused=false;enter(b)}}
+function checkBroke(){if(S.rep<=0){S.rep=2;S.cash=Math.max(500,Math.round(S.cash/2));R=[];S.streak=0;save();openM('<h2>📉 Your business lost its reputation</h2><p>Customers stopped coming. A relative lends you some money to restart. Your XP and learning stay with you.</p><button class="btn" id="ok2">Restart</button>');$("ok2").onclick=closeM}}
+/* ============ ACCOUNTS: journal entry ============ */
+const ACCT={Cash:"Real",Bank:"Real",Debtors:"Personal",Creditors:"Personal",Capital:"Personal",Drawings:"Personal",Machinery:"Real",Sales:"Nominal",Purchases:"Nominal",Rent:"Nominal",Salaries:"Nominal","Commission Received":"Nominal","Sales Returns":"Nominal"};
+const NAMES=["Ravi","Meena","Karan","Sana","Joseph","Priya","Imran","Divya"];
+const RULE={Personal:"Personal account: <b>Debit the receiver, Credit the giver</b>.",Real:"Real account: <b>Debit what comes in, Credit what goes out</b>.",Nominal:"Nominal account: <b>Debit expenses and losses, Credit incomes and gains</b>."};
+const TX=[a=>({t:"Sold goods for cash for "+Rs(a)+".",dr:"Cash",cr:"Sales"}),a=>({t:"Paid rent "+Rs(a)+" in cash.",dr:"Rent",cr:"Cash"}),a=>({t:"Bought goods on credit from "+pick(NAMES)+" for "+Rs(a)+".",dr:"Purchases",cr:"Creditors"}),a=>({t:"Sold goods on credit to "+pick(NAMES)+" for "+Rs(a)+".",dr:"Debtors",cr:"Sales"}),
+ a=>({t:"Received commission "+Rs(a)+" in cash.",dr:"Cash",cr:"Commission Received"}),a=>({t:"Owner brought "+Rs(a)+" cash into the business.",dr:"Cash",cr:"Capital"}),a=>({t:"Deposited "+Rs(a)+" cash into the bank.",dr:"Bank",cr:"Cash"}),a=>({t:"Paid salary "+Rs(a)+" by cash.",dr:"Salaries",cr:"Cash"}),
+ a=>({t:"Owner withdrew "+Rs(a)+" cash for personal use.",dr:"Drawings",cr:"Cash"}),a=>({t:"Bought machinery for "+Rs(a)+" by cheque.",dr:"Machinery",cr:"Bank"}),a=>({t:"Received "+Rs(a)+" by cheque from "+pick(NAMES)+" (a debtor).",dr:"Bank",cr:"Debtors"}),a=>({t:"Paid "+Rs(a)+" in cash to "+pick(NAMES)+" (a creditor).",dr:"Creditors",cr:"Cash"}),
+ a=>({t:pick(NAMES)+" returned goods worth "+Rs(a)+" that were sold to him on credit.",dr:"Sales Returns",cr:"Debtors"})];
+function modAcc(c){const d=diff(),pool=TX.slice(0,Math.min(TX.length,4+d*2)),amt=rnd(2,60)*100,x=pick(pool)(amt);x.a=amt;const opts=Object.keys(ACCT).map(k=>"<option>"+k+"</option>").join("");
+ openM(hd(c.b,"Journal entry")+'<p class="mut">Customers keep coming with transactions. Post each one correctly - your books are updated for real, and the Trial Balance at the end of the day uses them.</p><div class="q">'+x.t+'</div><div class="row2"><div><label>Debit account</label><select id="sd"><option value="">Choose...</option>'+opts+'</select></div><div><label>Credit account</label><select id="sc"><option value="">Choose...</option>'+opts+'</select></div></div>'+(d>=3?'<label>Type of the debited account</label><select id="st"><option value="">Choose...</option><option>Personal</option><option>Real</option><option>Nominal</option></select>':"")+'<button class="btn" id="go">Post entry</button>'+hintBtn("Ask: which two accounts are affected, and which is the receiver / what comes in? "+(ACCT[x.dr]==="Nominal"?"One is an expense or income (nominal).":"Think: what comes IN and what goes OUT?")));bindLeave();bindHint();
+ $("go").onclick=()=>{const dr=$("sd").value,cr=$("sc").value;if(!dr||!cr){toast("Choose both accounts");return}if(d>=3&&!$("st").value){toast("Choose the account type");return}
+  const ok=dr===x.dr&&cr===x.cr&&(d<3||$("st").value===ACCT[x.dr]);S.ledger[x.dr]=(S.ledger[x.dr]||0)+x.a;S.ledger[x.cr]=(S.ledger[x.cr]||0)-x.a;
+  finish(ok,"Journal entries",BASE.acc,"<b>"+x.dr+" A/c Dr. "+Rs(x.a)+"<br>&nbsp;&nbsp;&nbsp;&nbsp;To "+x.cr+" A/c "+Rs(x.a)+"</b><br>"+RULE[ACCT[x.dr]]+" (Debit side: "+x.dr+" is a "+ACCT[x.dr].toLowerCase()+" account.) "+RULE[ACCT[x.cr]].replace("Credit","<u>Credit</u>")+"<br><span class='mut'>Your answer: "+dr+" Dr / "+cr+" Cr. The correct entry has been posted to your ledger.</span>")}}
+/* ============ BANK: reconciliation ============ */
+function modBank(c){const d=diff(),cb=rnd(200,600)*100,it=[{k:"inp",t:"Cheque issued to a supplier, not yet presented in bank",v:rnd(20,80)*100,s:1},{k:"dnc",t:"Cheque deposited by you, not yet collected by bank",v:rnd(30,90)*100,s:-1}];
+ if(d>=2){it.push({k:"int",t:"Interest credited by the bank, not yet in your Cash Book",v:rnd(5,20)*100,s:1},{k:"chg",t:"Bank charges debited by the bank, not yet in your Cash Book",v:rnd(1,5)*100,s:-1})}
+ if(d>=3)it.push({k:"dd",t:"Direct debit (insurance premium) paid by bank, not in Cash Book",v:rnd(10,30)*100,s:-1});if(d>=4)it.push({k:"dc",t:"Customer paid directly into your bank account, not yet in Cash Book",v:rnd(20,60)*100,s:1});
+ if(d>=2)it.push({k:"no",t:"Cheque deposited and already collected / credited by the bank on time",v:rnd(10,50)*100,s:0});
+ const L=shuf(it),pb=cb+it.reduce((a,x)=>a+x.s*x.v,0);
+ openM(hd(c.b,"Bank reconciliation")+'<p class="mut">Start from the <b>favourable Cash Book balance</b> and reach the <b>Pass Book balance</b>. For each item choose what it does.</p><div class="q">Balance as per Cash Book (Dr.): <b>'+Rs(cb)+'</b></div>'+L.map((x,i)=>'<label>'+x.t+' - '+Rs(x.v)+'</label><select data-i="'+i+'" class="rs"><option value="">Choose...</option><option value="1">Add</option><option value="-1">Less</option><option value="0">No effect</option></select>').join("")+'<label>Balance as per Pass Book (you may type 40000+2500-1200)</label><input type="text" id="ans" inputmode="decimal" placeholder="Pass Book balance">'+'<div id="ev" class="mut"></div><button class="btn" id="go">Check</button>'+hintBtn("Cheques ISSUED not presented: the bank has not deducted them yet, so Pass Book is higher (Add). Cheques DEPOSITED not collected: bank has not added them (Less). Items the bank did but you have not recorded: interest/receipts = Add, charges/debits = Less."));bindLeave();bindHint();
+ $("ans").oninput=()=>{const v=calc($("ans").value);$("ev").textContent=v==null?"":"= "+Rs(v)};
+ $("go").onclick=()=>{const sel=[...card.querySelectorAll(".rs")];if(sel.some(s=>s.value==="")){toast("Choose for every item");return}const v=calc($("ans").value);if(v==null){toast("Type the Pass Book balance");return}
+  let right=0;sel.forEach((s,i)=>{if(+s.value===L[i].s)right++});const ok=right===L.length&&Math.abs(v-pb)<1;
+  const rows=L.map(x=>"<tr><td>"+x.t+"</td><td>"+(x.s>0?"Add":x.s<0?"Less":"-")+"</td><td>"+Rs(x.v)+"</td></tr>").join("");
+  finish(ok,"Bank reconciliation",BASE.bank,"Items right: "+right+"/"+L.length+". Correct Pass Book balance = <b>"+Rs(pb)+"</b> (you typed "+Rs(v)+").<table class='tb'><tr><th>Item</th><th>Effect</th><th>Amount</th></tr><tr><td>Balance as per Cash Book</td><td></td><td>"+Rs(cb)+"</td></tr>"+rows+"<tr><td><b>Pass Book balance</b></td><td></td><td><b>"+Rs(pb)+"</b></td></tr></table>")}}
+function calc(t){t=String(t).replace(/,/g,"").trim();if(!t||!/^[0-9+\-*\/().\s]+$/.test(t))return null;try{const r=Function('"use strict";return ('+t+')')();return isFinite(r)?Math.round(r*10000)/10000:null}catch(e){return null}}
+/* ============ LAW ============ */
+const CASES=[
+["Ravi offers to sell his bike to Amit for ₹20,000. Amit replies: \"I will buy it for ₹18,000.\" Is there a contract?",["Yes, at ₹18,000","Yes, at ₹20,000","No - the reply is a counter-offer that ends the original offer","No - price was not mentioned"],2,"Acceptance must be absolute and unqualified (Sec 2(b)). A counter-offer rejects the original offer (Hyde v Wolverhampton), so no contract yet."],
+["Sohan, aged 16, signs an agreement to buy a car on credit. What is the legal position?",["Valid - he signed","Voidable at his option","Void ab initio","Valid if his father agrees later"],2,"A minor's agreement is void ab initio (Sec 11; Mohori Bibee v Dharmodas Ghose). It cannot be ratified after he becomes major."],
+["A husband promises to pay his wife ₹5,000 monthly while he is abroad. They later quarrel and she sues. Result?",["She wins - promise is written","She loses - no intention to create legal relations","She wins - love and affection is consideration","Court decides on equity"],1,"Domestic / social agreements lack intention to create legal relations (Balfour v Balfour)."],
+["Anil signs a contract after being threatened with a false criminal case. The contract is:",["Valid","Void","Voidable at Anil's option","Illegal"],2,"Consent caused by coercion (Sec 15) makes a contract voidable at the option of the party whose consent was so caused (Sec 19)."],
+["A seller honestly but wrongly states that a second-hand car has run 40,000 km (actually 70,000). The buyer discovers it later.",["Fraud - void","Misrepresentation - voidable","Mistake - void","Nothing - caveat emptor"],1,"An innocent false statement that induces the contract is misrepresentation (Sec 18); the contract is voidable (Sec 19)."],
+["A agrees to pay B ₹50,000 to commit a crime. Enforceable?",["Yes, if B performs","Yes, if part is paid","No - unlawful object, agreement is void","Voidable at A's option"],2,"An agreement whose object is forbidden by law is void (Sec 23)."],
+["A promises, orally and without any consideration, to give B ₹10,000 as a gift. B sues. Result?",["B wins","B loses - agreement without consideration is void (Sec 25)","B wins if A is rich","B wins if A is a relative"],1,"Sec 25: an agreement without consideration is void, except written and registered promises out of natural love and affection, compensation for voluntary past service, or promise to pay a time-barred debt."],
+["Mohan finds and returns Ravi's lost cow, voluntarily. Later Ravi promises to pay him ₹500. Enforceable?",["No - past consideration is no consideration","Yes - Sec 25(2): compensation for a voluntary past service","No - promise is oral","Only if Mohan asked for it"],1,"In India past consideration is valid (Sec 2(d)), and Sec 25(2) enforces a promise to compensate for something voluntarily done for the promisor."],
+["Seller X does not own a laptop (he borrowed it) but sells it to Y in good faith. Y gets:",["Good title","Better title than X","No better title than X had - nemo dat","Title after 1 year"],2,"Sec 27 Sale of Goods Act: nemo dat quod non habet - a buyer gets no better title than the seller, subject to exceptions (mercantile agent, estoppel, voidable title, seller in possession)."],
+["A agrees to deliver 100 bags of rice to B next month at ₹2,000 per bag. This is a(n):",["Sale","Agreement to sell","Hire purchase","Bailment"],1,"When the transfer of property in goods is to take place at a future time, it is an agreement to sell (Sec 4(3))."],
+["The goods delivered do not match the sample. The buyer wants to cancel the contract. Which is it?",["Breach of warranty - only damages","Breach of condition - may repudiate","Nothing - caveat emptor","Illegal sale"],1,"Sale by sample is an implied condition (Sec 17). Breach of condition lets the buyer repudiate and claim damages; breach of warranty gives damages only (Sec 12-13)."],
+["X agrees to sell \"100 tons of oil\" without saying which kind of oil. The agreement is:",["Valid","Voidable","Void for uncertainty","Illegal"],2,"Sec 29: agreements whose meaning is not certain or capable of being made certain are void."],
+["Rahul and Vijay bet ₹1,000 on a cricket match; Vijay loses and refuses to pay. Rahul can:",["Sue and recover","Not recover - wagering agreement is void (Sec 30)","Recover with interest","Recover half"],1,"Wagering agreements are void (Sec 30); no suit lies to recover the winnings."],
+["A hires a taxi to reach an airport for a flight; driver knows nothing about it and breaks down. A misses a ₹1 crore deal. Which damages can A claim?",["Full ₹1 crore","Only ordinary loss naturally arising from breach","Nothing","Double the fare"],1,"Sec 73 / Hadley v Baxendale: only damages that arise naturally or were in the contemplation of both parties. Special loss unknown to the other party is too remote."]];
+function modLaw(c){const d=S.seen.law=S.seen.law||[];let i;const un=CASES.map((_,k)=>k).filter(k=>!d.includes(k));i=un.length?pick(un):rnd(0,CASES.length-1);d.push(i);if(d.length>CASES.length-3)S.seen.law=[];const q=CASES[i],order=shuf([0,1,2,3]);
+ openM(hd(c.b,"The Court")+'<p class="mut">A client asks for your legal opinion. Decide like a CA.</p><div class="q">'+q[0]+'</div>'+order.map(o=>'<button class="opt" data-o="'+o+'">'+esc(q[1][o])+'</button>').join("")+hintBtn("Name the section first: which essential of a valid contract (Sec 10) or which section of the Sale of Goods Act is being tested?"));bindLeave();bindHint();
+ card.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{const o=+b.dataset.o,ok=o===q[2];card.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(+x.dataset.o===q[2])x.classList.add("ok")});if(!ok)b.classList.add("bad");
+  setTimeout(()=>finish(ok,"Contract & Sale of Goods",BASE.law,"<b>Correct answer: "+esc(q[1][q[2]])+"</b><br>"+q[3]),700)})}
+/* ============ QUANT ============ */
+const QG=[
+ d=>{const P=rnd(1,8+d)*1000,r=pick([10,20]);const A=P*(1+r/100)**2;return{tag:"Compound interest",q:"Find the <b>compound interest</b> on "+Rs(P)+" for 2 years at "+r+"% p.a., compounded annually.",a:A-P,h:"A = P(1+r/100)^n, then CI = A - P.",s:"A = "+P+" x (1+"+r+"/100)^2 = "+Rs(A)+"; CI = A - P = <b>"+Rs(A-P)+"</b>."}},
+ d=>{const P=rnd(2,10+d)*1000,r=pick([10,20,5]);const ci=P*((1+r/100)**2-1),si=P*r*2/100;return{tag:"SI vs CI",q:"Find the difference between <b>CI and SI</b> on "+Rs(P)+" for 2 years at "+r+"% p.a.",a:ci-si,h:"For 2 years, CI - SI = P x (r/100)^2.",s:"CI = "+Rs(ci)+", SI = "+Rs(si)+"; difference = P(r/100)^2 = <b>"+Rs(ci-si)+"</b>."}},
+ d=>{const a=rnd(2,4),b=rnd(3,6),c=rnd(1,5),T=(a+b+c)*rnd(2,8+d)*500,k=pick([["A",a],["B",b],["C",c]]);return{tag:"Ratio and proportion",q:"A, B and C share a profit of "+Rs(T)+" in the ratio "+a+" : "+b+" : "+c+". Find <b>"+k[0]+"'s</b> share.",a:T*k[1]/(a+b+c),h:"Share = Total x (his part) / (sum of parts).",s:"Sum of parts = "+(a+b+c)+"; "+k[0]+" = "+T+" x "+k[1]+"/"+(a+b+c)+" = <b>"+Rs(T*k[1]/(a+b+c))+"</b>."}},
+ d=>{const a=rnd(2,9),df=rnd(2,6),n=rnd(8,14+d),S2=n/2*(2*a+(n-1)*df);return{tag:"Sequences (AP)",q:"Find the sum of the first <b>"+n+" terms</b> of the AP: "+a+", "+(a+df)+", "+(a+2*df)+", ...",a:S2,h:"S_n = n/2 [2a + (n-1)d].",s:"a="+a+", d="+df+": S = "+n+"/2 x [2x"+a+" + "+(n-1)+"x"+df+"] = <b>"+S2+"</b>."}},
+ d=>{const M=rnd(5,40)*100,d1=pick([10,20,25]),d2=pick([10,20]),F=M*(1-d1/100)*(1-d2/100);return{tag:"Percentage and discount",q:"A shop marks a shirt at "+Rs(M)+" and gives successive discounts of "+d1+"% and "+d2+"%. Find the <b>selling price</b>.",a:F,h:"Multiply by (1 - d1/100) and then by (1 - d2/100).",s:Rs(M)+" x "+(100-d1)/100+" x "+(100-d2)/100+" = <b>"+Rs(F)+"</b>."}},
+ d=>{const n=rnd(5,9),r=rnd(2,3),f=(x)=>x<=1?1:x*f(x-1),v=f(n)/(f(r)*f(n-r));return{tag:"Permutation and combination",q:"A committee of <b>"+r+" members</b> is chosen from "+n+" people. In how many ways can it be done?",a:v,h:"nCr = n! / [r!(n-r)!].",s:n+"C"+r+" = "+n+"!/("+r+"! x "+(n-r)+"!) = <b>"+v+"</b>."}},
+ d=>{const x=[rnd(10,40),rnd(10,40),rnd(10,40),rnd(10,40),rnd(10,40)];const m=x.reduce((a,b)=>a+b,0);const sum=m+ (5-m%5)%5;x[4]+=(5-m%5)%5;const mean=sum/5;return{tag:"Statistics (mean)",q:"Find the <b>arithmetic mean</b> of: "+x.join(", ")+".",a:mean,h:"Mean = sum of values / number of values.",s:"Sum = "+sum+"; mean = "+sum+"/5 = <b>"+mean+"</b>."}},
+ d=>{const P=rnd(2,9)*1000,r=pick([5,8,10,12]),n=rnd(2,5),I=P*r*n/100;return{tag:"Simple interest",q:"Find the <b>simple interest</b> on "+Rs(P)+" at "+r+"% p.a. for "+n+" years.",a:I,h:"SI = P x r x t / 100.",s:Rs(P)+" x "+r+" x "+n+" / 100 = <b>"+Rs(I)+"</b>."}}];
+function modQa(c){const d=diff(),pool=QG.slice(0,Math.min(QG.length,4+d)),q=pick(pool)(d);openM(hd(c.b,"The Academy")+'<p class="mut">Solve it on paper or type the working like 10000*1.21-10000. The answer box shows the value live.</p><div class="q">'+q.q+'</div><label>Your answer</label><input type="text" id="ans" inputmode="decimal" placeholder="Number or expression"><div id="ev" class="mut"></div><button class="btn" id="go">Submit</button>'+hintBtn(q.h));bindLeave();bindHint();
+ $("ans").oninput=()=>{const v=calc($("ans").value);$("ev").textContent=v==null?"":"= "+v};
+ $("go").onclick=()=>{const v=calc($("ans").value);if(v==null){toast("Type a number");return}finish(Math.abs(v-q.a)<=Math.max(.5,Math.abs(q.a)*.0005),q.tag,BASE.qa,"<b>Worked solution</b><br>"+q.s+"<br><span class='mut'>You answered "+v+".</span>")}}
+/* ============ ECONOMICS ============ */
+const SHIFT=[["Incomes rise and the good is a normal good (e.g. restaurant meals).","Demand shifts right",1,1],["The government gives a subsidy to producers.","Supply shifts right",-1,1],["Farmers' wages and input costs rise sharply.","Supply shifts left",1,-1],["Tastes move away from the product (a health scare).","Demand shifts left",-1,-1],["The price of a substitute (tea) rises - effect on coffee.","Demand for coffee shifts right",1,1],["The price of a complement (petrol) rises - effect on cars.","Demand for cars shifts left",-1,-1],["New technology lowers the cost of producing smartphones.","Supply shifts right",-1,1],["Incomes rise - effect on an inferior good (e.g. cheap loose rice).","Demand shifts left",-1,-1]];
+function modEco(c){const d=diff(),t=d<=1?pick(["shift","el"]):pick(["lab","lab","el","shift"]);({lab:ecoLab,el:ecoEl,shift:ecoShift})[t](c)}
+function ecoShift(c){const s=pick(SHIFT);const names=[[1,1,"Price UP, Quantity UP"],[1,-1,"Price UP, Quantity DOWN"],[-1,1,"Price DOWN, Quantity UP"],[-1,-1,"Price DOWN, Quantity DOWN"]];
+ openM(hd(c.b,"Market news")+'<p class="mut">News arrives at the Bazaar. What happens to the new equilibrium?</p><div class="q">'+s[0]+'</div>'+names.map((n,i)=>'<button class="opt" data-i="'+i+'">'+n[2]+'</button>').join("")+hintBtn("First decide which curve shifts (demand or supply) and which way. Then slide along the OTHER curve."));bindLeave();bindHint();
+ card.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{const n=names[+b.dataset.i],ok=n[0]===s[2]&&n[1]===s[3];finish(ok,"Demand & supply shifts",BASE.eco,"<b>"+s[1]+"</b>, so equilibrium: <b>"+names.find(z=>z[0]===s[2]&&z[1]===s[3])[2]+"</b>.<br>Demand right or supply left: price rises; demand right or supply right: quantity rises. Always shift only ONE curve when only one factor changes.")})}
+function ecoEl(c){const Ed=pick([.4,.5,.8,1,1.5,2,2.5]),p0=pick([50,100,200]),dp=pick([10,20]),sign=pick([1,-1]),q0=pick([100,200,400,500]),p1=p0*(1+sign*dp/100),dq=Ed*dp,q1=q0*(1-sign*dq/100);
+ openM(hd(c.b,"Elasticity")+'<p class="mut">The shopkeeper changed the price and watched the sales.</p><div class="q">Price changed from <b>'+Rs(p0)+'</b> to <b>'+Rs(p1)+'</b> and quantity demanded changed from <b>'+q0+'</b> to <b>'+q1+'</b> units. Find the price elasticity of demand (ignore the sign).</div><label>|Ed| (use the percentage method on original values)</label><input type="text" id="ans" inputmode="decimal"><label>Demand is...</label><select id="cl"><option value="">Choose...</option><option value="e">Elastic (Ed &gt; 1)</option><option value="u">Unit elastic (Ed = 1)</option><option value="i">Inelastic (Ed &lt; 1)</option></select><button class="btn" id="go">Submit</button>'+hintBtn("Ed = % change in quantity / % change in price. % change = change / original x 100."));bindLeave();bindHint();
+ $("go").onclick=()=>{const v=calc($("ans").value);if(v==null||!$("cl").value){toast("Fill the number and the type");return}const k=Ed>1?"e":Ed<1?"i":"u",ok=Math.abs(v-Ed)<.06&&$("cl").value===k;
+  finish(ok,"Price elasticity",BASE.eco,"%ΔQ = ("+(q1-q0)+"/"+q0+") x 100 = "+((q1-q0)/q0*100).toFixed(0)+"%; %ΔP = ("+(p1-p0)+"/"+p0+") x 100 = "+((p1-p0)/p0*100).toFixed(0)+"%.<br>|Ed| = <b>"+Ed+"</b> &rarr; "+(k==="e"?"elastic: cutting price raises total revenue":k==="i"?"inelastic: raising price raises total revenue":"unit elastic: total revenue stays the same")+".")}}
+function ecoLab(c){const pstar=rnd(12,24),cc=rnd(5,10),b=rnd(8,14),a=b*(2*pstar-cc),F=rnd(3,8)*100,prof=p=>Math.max(0,a-b*p)*(p-cc)-F,maxp=prof(pstar);let trials=[],best=-1e9;
+ openM(hd(c.b,"Pricing lab")+'<p class="mut">You run a tea stall. Market research: at price P the stall sells <b>Q = '+a+' - '+b+'P</b> cups a day. Each cup costs <b>'+Rs(cc)+'</b> to make; fixed cost <b>'+Rs(F)+'</b>/day. Find the price (whole rupees) that earns <b>at least 95% of the maximum profit</b>. You have 5 trial days.</p><label>Price per cup: <b id="pv"></b></label><input type="range" id="sl" min="1" max="'+Math.round(a/b)+'" value="'+Math.round(cc+(a/b-cc)/4)+'"><button class="btn" id="go">Run a day</button><div id="tr"></div>'+hintBtn("Profit is highest where MR = MC. Here MC = "+Rs(cc)+". Demand is P = "+(a/b)+" - Q/"+b+", so MR = "+(a/b)+" - 2Q/"+b+". Solve MR = MC for Q, then find P."));bindLeave();bindHint();
+ const sl=$("sl"),upd=()=>$("pv").textContent=Rs(sl.value);sl.oninput=upd;upd();
+ $("go").onclick=()=>{const p=+sl.value,q=Math.max(0,a-b*p),pf=prof(p),ed=q>0?p*b/q:0;trials.push([p,q,p*q,pf,ed]);best=Math.max(best,pf);
+  const done=best>=.95*maxp||trials.length>=5;$("tr").innerHTML='<table class="tb"><tr><th>Day</th><th>Price</th><th>Cups</th><th>Revenue</th><th>Profit</th><th>|Ed|</th></tr>'+trials.map((t,i)=>"<tr><td>"+(i+1)+"</td><td>"+Rs(t[0])+"</td><td>"+t[1]+"</td><td>"+Rs(t[2])+"</td><td>"+Rs(t[3])+"</td><td>"+t[4].toFixed(2)+"</td></tr>").join("")+"</table>"+(done?"":"<p class='mut'>Day "+trials.length+"/5 done. Where is |Ed| equal to 1? Where is profit largest?</p>");
+  if(done){$("go").disabled=true;sl.disabled=true;const ok=best>=.95*maxp,n=trials.length;setTimeout(()=>finish(ok,"Profit maximisation (MR=MC)",BASE.eco*(n<=2?1.3:n<=3?1:.7),"Best price: <b>"+Rs(pstar)+"</b> (Q = "+(a-b*pstar)+" cups, max profit "+Rs(maxp)+"). At the optimum MR = MC: "+(a/b)+" - 2Q/"+b+" = "+cc+" &rarr; Q = "+(a-b*pstar)+".<br>Notice: |Ed| at the best price is "+(pstar*b/(a-b*pstar)).toFixed(2)+" (always above 1: a monopolist never prices where demand is inelastic).<br>Your best: "+Rs(best)+" in "+n+" trial(s)."),900)}}}
+/* ============ HOME ============ */
+function trial(){const rows=Object.keys(S.ledger).filter(k=>Math.abs(S.ledger[k])>.01).sort();let dr=0,cr=0;const t=rows.map(k=>{const v=S.ledger[k];if(v>0)dr+=v;else cr-=v;return"<tr><td>"+k+"</td><td>"+(v>0?Rs(v):"")+"</td><td>"+(v<0?Rs(-v):"")+"</td></tr>"}).join("");return rows.length?'<table class="tb"><tr><th>Account</th><th>Dr.</th><th>Cr.</th></tr>'+t+'<tr><td><b>Total</b></td><td><b>'+Rs(dr)+'</b></td><td><b>'+Rs(cr)+'</b></td></tr></table><p>'+(Math.abs(dr-cr)<.5?'✅ Trial balance <b>tallies</b>. Both sides are equal because every entry has equal debit and credit.':'⚠️ Does not tally')+'</p>':'<p class="mut">No entries yet. Serve customers at Ledger & Co. to build your books.</p>'}
+function modHome(b){cur={b,subj:null};const bars=Object.keys(SUBJ).map(k=>{const[o,t]=S.stats[k],p=t?Math.round(o/t*100):0;return'<div style="margin:6px 0">'+SUBJ[k].e+' '+SUBJ[k].n+' <span class="mut">'+o+'/'+t+' ('+p+'%)</span><div class="sb"><i style="width:'+p+'%"></i></div></div>'}).join("");
+ const weak=Object.entries(S.topics).filter(([k,v])=>v[1]>=2&&v[0]/v[1]<.6).map(([k,v])=>k+" ("+v[0]+"/"+v[1]+")");
+ openM(hd(b,"")+'<div class="row2"><div><label>Cash</label><div class="big">'+Rs(S.cash)+'</div></div><div><label>Today\'s goal</label><div class="big">'+Rs(goal())+'</div></div></div><label>Your learning</label>'+bars+'<p>'+(weak.length?'🎯 <b>Revise:</b> '+weak.join(", "):'No weak topics yet - keep playing!')+'</p><label>Upgrades</label><button class="btn" id="u1">👟 Running shoes +25% speed - '+Rs(800+600*S.boots)+' (owned '+S.boots+')</button><button class="btn" id="u2">⏱ Wall clock: customers wait +30% - '+Rs(1200+800*S.clock)+' (owned '+S.clock+')</button><button class="btn" id="u3">💡 3 hint tokens - '+Rs(300)+' (have '+S.hints+')</button><label>Your books (Trial Balance)</label>'+trial()+'<button class="btn g" id="eod">End the day now</button><button class="btn g" id="rst">Reset game</button>');bindLeave();
+ const buy=(id,cost,fn)=>$(id).onclick=()=>{if(S.cash<cost){toast("Not enough cash");return}S.cash-=cost;fn();save();sOk();modHome(b)};buy("u1",800+600*S.boots,()=>S.boots++);buy("u2",1200+800*S.clock,()=>S.clock++);buy("u3",300,()=>S.hints+=3);
+ $("eod").onclick=()=>{closeM();endDay()};$("rst").onclick=()=>{if(confirm("Delete all progress?")){S=fresh();S.t=0;R=[];save();closeM()}}}
+$("bHome").onclick=()=>{if(!paused)goTo(B[5].dx,B[5].dy)};
+function endDay(){if(paused&&$("modal").classList.contains("on")&&cur===null&&false)return;const earned=S.cash-S.dayStart,ok=S.cash>=goal();let bonus=0;if(ok){bonus=500;S.cash+=bonus;S.xp+=30;S.rep=clamp(S.rep+.3,0,5)}else S.rep=clamp(S.rep-.3,0,5);
+ const acc=Object.values(S.stats).reduce((a,v)=>[a[0]+v[0],a[1]+v[1]],[0,0]);cur=null;
+ openM('<h2>🌙 Day '+S.day+' is over</h2><div class="res '+(ok?"ok":"bad")+'">'+(ok?'✅ Goal reached! Bonus '+Rs(bonus)+' +30 XP':'❌ Goal '+Rs(goal())+' missed. Reputation dropped. Serve more customers and watch the clocks.')+'</div><p>Earned today: <b>'+Rs(earned)+'</b> &nbsp; Accuracy overall: <b>'+(acc[1]?Math.round(acc[0]/acc[1]*100):0)+'%</b> &nbsp; Best streak: <b>'+S.best+'</b></p><label>Books at closing (Trial Balance)</label>'+trial()+'<button class="btn" id="nd">Start Day '+(S.day+1)+'</button>');
+ $("nd").onclick=()=>{S.day++;S.t=0;S.dayStart=S.cash;R=[];spawnT=3;renderReqs();save();closeM();checkBroke()}}
+/* help */
+function help(){openM('<h2>🏙️ CA City</h2><p>You run a small business in a busy city. <b>Customers appear outside buildings</b> (bubble with a timer). Walk to them before they lose patience, and solve their real-life problem:</p><p>🧾 <b>Ledger & Co.</b> - journal entries (your books are really updated)<br>🏦 <b>City Bank</b> - bank reconciliation<br>⚖️ <b>Court House</b> - legal opinions<br>🛒 <b>Bazaar</b> - pricing, elasticity, market news<br>📚 <b>Academy</b> - interest, ratios, series, statistics<br>🏠 <b>Home</b> - upgrades, your Trial Balance, weak topics</p><p>Walk with <b>WASD / arrows</b> or <b>tap the map</b>. Tap a customer chip (top-left) to walk there. Correct answers build a 🔥 streak multiplier and XP; every answer shows a worked explanation. At 18:00-ish the day ends: reach the cash goal. Hints cost a token or ₹50.</p><button class="btn" id="ok2">Play</button>');$("ok2").onclick=()=>{S.tut=1;save();closeM()}}
+$("bHelp").onclick=()=>{if(!paused)help()};
+/* start */
+hud();requestAnimationFrame(frame);if(!S.tut)setTimeout(help,300);
+window.__game={S:()=>S,P,B,enter,goTo,finish:()=>0,R:()=>R,spawn,closeM};
+</script></body></html>
