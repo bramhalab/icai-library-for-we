@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="utf-8"><meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CA Foundation Library</title>
 <style>
-:root{--paper:#F3EEE2;--dark:#E8E0CC;--ink:#1E2A38;--soft:#4A5568;--ledger:#8C6B3F;--acc:#1E4D6B;--rule:#C9BEA0;--card:#FBF8F0}
-@media (prefers-color-scheme:dark){:root{--paper:#1b1f26;--dark:#252b34;--ink:#ece6d6;--soft:#a9b0bb;--ledger:#d2a869;--acc:#7fb8d9;--rule:#3a424e;--card:#222831}}
+:root{color-scheme:light;--paper:#F3EEE2;--dark:#E8E0CC;--ink:#1E2A38;--soft:#4A5568;--ledger:#8C6B3F;--acc:#1E4D6B;--rule:#C9BEA0;--card:#FBF8F0}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--paper);color:var(--ink);font:16px/1.45 Georgia,'Iowan Old Style',serif;overflow:hidden}
@@ -57,7 +56,7 @@ iframe{flex:1;border:0;width:100%;background:#fff}
  #main{padding:14px 12px 40px}}
 @media(prefers-reduced-motion:reduce){#side{transition:none}}
 
-.subs{display:none!important}
+/* Subject cards remain visible for quick paper filtering. */
 #modes{display:none}.prac #modes{display:inline-flex}
 #modes button{background:var(--card);border:1px solid var(--acc);padding:6px 10px;font:12px 'Courier New',monospace;color:var(--acc)}
 #modes button.on{background:var(--acc);color:var(--paper)}
@@ -73,7 +72,7 @@ iframe{flex:1;border:0;width:100%;background:#fff}
 <body>
 <div class="app">
   <div class="brand">CA Foundation Library<small>ICAI study material</small></div>
-  <div class="top"><button class="pill" id="fbtn" title="Folders" aria-label="Folders"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><input id="q" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="xw" title="Export ALL work (one JSON file)" aria-label="Export all work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/></svg></button><button class="pill" id="lw" title="Import work (.json)" aria-label="Import work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lwf" accept=".json,application/json" hidden><a class="pill" href="game.html" id="gm" title="CA City game - learn by playing" aria-label="Game"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="7" width="19" height="11" rx="4"/><path d="M7 10.5v4M5 12.5h4"/><path d="M15.5 11.5h.01M18 13.5h.01" stroke-width="3"/></svg></a><button class="pill" id="ed" title="Study material edition (click to change)" aria-label="Edition"></button><button class="pill" id="mute" title="Sound on / off" aria-label="Sound"></button></div>
+  <div class="top"><button class="pill" id="fbtn" title="Folders" aria-label="Folders"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><input id="q" aria-label="Search library by file or folder name" type="search" placeholder="Search: law aug 25, economics RTP" autocomplete="off"><button class="pill" id="xw" title="Export ALL work (one JSON file)" aria-label="Export all work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/></svg></button><button class="pill" id="lw" title="Import work (.json)" aria-label="Import work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lwf" accept=".json,application/json" hidden><button class="pill" id="ed" title="Study material edition (click to change)" aria-label="Edition"></button><button class="pill" id="mute" title="Sound on / off" aria-label="Sound"></button></div>
   <nav id="side" aria-label="Folders"></nav>
   <main id="main"></main>
 </div>
@@ -90,7 +89,7 @@ const IC={folder:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d
 let files=[],ch={},cnt={},exp=new Set(),cur={t:"d",id:"",p:""};
 
 /* sound */
-let ac,muted=localStorage.getItem("mute")==="1";
+let ac,muted=false;try{muted=localStorage.getItem("mute")==="1"}catch(_){}
 const A=()=>{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();return ac};
 function note(f,t0,d,type="sine",v=.3){const c=A(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime+t0;o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(c.destination);o.start(t);o.stop(t+d)}
 function swish(a,b,d=.22,v=.5){const c=A(),n=Math.floor(c.sampleRate*d),bf=c.createBuffer(1,n,c.sampleRate),x=bf.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);
@@ -99,13 +98,13 @@ const SND={dir:()=>swish(500,2600),back:()=>swish(2600,500),subj:()=>{note(120,0
  file:()=>{note(660,0,.25,"triangle");note(880,.09,.25,"triangle");note(1320,.18,.4,"triangle",.2)},tick:()=>note(1800,0,.04,"square",.06)};
 const play=k=>{if(!muted)try{SND[k]()}catch(e){}};
 const setMute=()=>$("mute").innerHTML=muted?IC.mute:IC.snd;
-$("mute").onclick=()=>{muted=!muted;localStorage.setItem("mute",muted?"1":"0");setMute();play("file")};setMute();
+$("mute").onclick=()=>{muted=!muted;try{localStorage.setItem("mute",muted?"1":"0")}catch(_){}setMute();play("file")};setMute();
 
 /* data */
 const clean=s=>s.replace(/[_\-\/().]/g," ");
 const subjOf=p=>{for(const s of p.split("/")){const m=SUBJ.find(j=>j.re.test(clean(s)));if(m)return m.id}return"other"};
-async function load(){let url=API+"?recursive=true&limit=1000",out=[];
- while(url){const r=await fetch(url);if(!r.ok)throw 0;out=out.concat(await r.json());const m=(r.headers.get("link")||"").match(/<([^>]+)>;\s*rel="next"/);url=m?m[1]:null}
+async function load(){let url=API+"?recursive=true&limit=1000",out=[],pageCount=0;
+ while(url){if(++pageCount>100)throw new Error("Dataset index pagination limit exceeded");const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),15000);let r;try{r=await fetch(url,{signal:ctl.signal})}finally{clearTimeout(timer)}if(!r.ok)throw new Error(r.status===429?"Dataset rate limit reached (HTTP 429)":"Dataset request failed (HTTP "+r.status+")");const batch=await r.json();if(!Array.isArray(batch))throw new Error("Unexpected dataset index response");out=out.concat(batch);const link=r.headers.get("link")||"",m=link.match(/<([^>]+)>\s*;\s*rel=(?:"next"|next)/i);url=m?m[1]:null}
  files=out.filter(x=>x.type==="file"&&/\.pdf$/i.test(x.path)&&!/ignore|ingnore/i.test(x.path)).map(x=>({...x,s:subjOf(x.path)}));
  const D=new Set();files.forEach(f=>{const p=f.path.split("/");for(let i=1;i<p.length;i++){const d=p.slice(0,i).join("/");D.add(d);cnt[d]=(cnt[d]||0)+1}});
  [...D].sort(NC.compare).forEach(d=>(ch[par(d)]=ch[par(d)]||[]).push(d))}
@@ -120,7 +119,7 @@ function node(label,depth,on,tg,onTg,onGo){const d=document.createElement("div")
 let eds=[],ed="all";
 const vis=()=>ed==="all"?files:files.filter(f=>{const t=f.path.split("/")[0];return !/^ENG_SUB_/.test(t)||t===ed});
 const edLabel=()=>$("ed").innerHTML=IC.layers+"<span>"+(ed==="all"?"All":ed.replace("ENG_SUB_",""))+"</span>";
-$("ed").onclick=()=>{const o=eds.concat("all");ed=o[(o.indexOf(ed)+1)%o.length];localStorage.setItem("ed",ed);edLabel();play("subj");render()};
+$("ed").onclick=()=>{const o=eds.concat("all");ed=o[(o.indexOf(ed)+1)%o.length];try{localStorage.setItem("ed",ed)}catch(_){}edLabel();play("subj");render()};
 const sc=()=>cur.t==="s"?vis().filter(f=>f.s===cur.id):vis();
 function dirsOf(list,p){const o={},pre=p?p+"/":"";list.forEach(f=>{if(!f.path.startsWith(pre))return;const r=f.path.slice(pre.length).split("/");if(r.length>1)o[r[0]]=(o[r[0]]||0)+1});return Object.keys(o).sort(NC.compare).map(n=>[pre+n,o[n]])}
 const subOf=()=>cur.t==="s"?SUBJ.find(j=>j.id===cur.id):null;
@@ -146,13 +145,13 @@ const byName=(a,b)=>NC.compare(a.path,b.path);
 function main(){const M=$("main");M.innerHTML="";M.scrollTop=0;const list=sc(),p=cur.p;M.append(crumbs());
  if(cur.t==="d"&&!p){const g=document.createElement("div");g.className="subs";SUBJ.forEach(s=>{const b=document.createElement("button");b.className="sub";
    b.innerHTML='<span class="p">'+s.p+"</span><h2>"+s.name+'</h2><span class="mono">'+vis().filter(f=>f.s===s.id).length+" PDFs</span>";b.onclick=()=>go("s",s.id,"","subj");g.append(b)});M.append(g);
-  const rc=JSON.parse(localStorage.getItem("recent")||"[]");if(rc.length){M.insertAdjacentHTML("beforeend",'<div class="h" style="padding-left:0">Continue reading</div>');M.append(ul(rc.map(x=>frow({path:x},1))))}
+  let rc=[];try{rc=JSON.parse(localStorage.getItem("recent")||"[]")}catch(_){}if(!Array.isArray(rc))rc=[];if(rc.length){M.insertAdjacentHTML("beforeend",'<div class="h" style="padding-left:0">Continue reading</div>');M.append(ul(rc.map(x=>frow({path:x},1))))}
   M.insertAdjacentHTML("beforeend",'<div class="h" style="padding-left:0">All folders</div>')}
  const kids=dirsOf(list,p).map(([d,n])=>drow(d,n)),fl=list.filter(f=>par(f.path)===p).sort(byName).map(f=>frow(f));
  M.append(kids.length+fl.length?ul(kids.concat(fl)):msg("No files here yet."))}
 
 /* nav: hash is d:path  or  s:subjectId|path */
-function render(){const h=decodeURIComponent(location.hash.slice(1)),i=h.indexOf(":");let t="d",id="",p="";
+function render(){let h="",i=-1;try{h=decodeURIComponent(location.hash.slice(1));i=h.indexOf(":")}catch(_){location.hash="";h="";i=-1}let t="d",id="",p="";
  if(i>0){t=h.slice(0,i)==="s"?"s":"d";const r=h.slice(i+1);if(t==="s"){const j=r.indexOf("|");id=j<0?r:r.slice(0,j);p=j<0?"":r.slice(j+1)}else p=r}
  cur={t,id,p};const key=(t==="s"?"s"+id:"d")+"|",a=p?p.split("/"):[];for(let k=1;k<a.length;k++)exp.add(key+a.slice(0,k).join("/"));
  $("q").value="";$("side").classList.remove("open");side();main()}
@@ -160,42 +159,63 @@ function go(t,id,p,s){play(s);const nh=t==="s"?"s:"+id+"|"+p:"d:"+p;if(location.
 addEventListener("hashchange",()=>{closeV();render()});
 $("fbtn").onclick=()=>{play("tick");$("side").classList.toggle("open")};
 
-function openFile(p){play("file");let rc=JSON.parse(localStorage.getItem("recent")||"[]").filter(x=>x!==p);rc.unshift(p);localStorage.setItem("recent",JSON.stringify(rc.slice(0,5)));
+function openFile(p){play("file");let rc=[];try{rc=JSON.parse(localStorage.getItem("recent")||"[]")}catch(_){}if(!Array.isArray(rc))rc=[];rc=rc.filter(x=>x!==p);rc.unshift(p);try{localStorage.setItem("recent",JSON.stringify(rc.slice(0,5)))}catch(_){}
  const u=RAW+enc(p);$("vt").textContent=base(p);$("vo").href=u;loadReader(p);$("viewer").classList.add("on")}
 function closeV(){$("viewer").classList.remove("on");$("vf").src="about:blank"}
 
 /* ===== reader (reader.html) + ONE master work file (also kept in browser storage) ===== */
 let curPdf="";
-function subjectForPath(p){
- const text=p.replace(/[_\-/.()]/g," ");
- const rules=[[/\b(accounting|accounts?|acc)\b/i,"acc"],[/\b(business laws?|laws?)\b/i,"law"],[/\b(quantitative|aptitude|maths?|mathematics|statistics|stats?|logical|reasoning)\b/i,"qa"],[/\b(economics|eco|bck|commercial)\b/i,"eco"]];
- for(const [re,id] of rules)if(re.test(text))return id;return "acc";
+function loadReader(p){curPdf=p;const f=$("vf");f.src="about:blank";setTimeout(()=>{f.src="reader.html#"+encodeURIComponent(p)},30)}
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){if(typeof toast==="function")toast("Save failed — export a backup and free browser storage.");return false}};
+function validateBackup(o){
+ if(!o||o.app!=="icai-library"||(o.v!==undefined&&![1,2,3].includes(o.v)))throw new Error("Unsupported backup format.");
+ let source=o.pdfs;if(!source&&o.pdf)source={[o.pdf]:{saved:Date.now(),ann:o.ann||[],qs:o.qs||[]}};
+ if(!source||typeof source!=="object"||Array.isArray(source))throw new Error("Backup has no PDF records.");
+ const out={},paths=Object.keys(source);if(paths.length>10000)throw new Error("Backup has too many PDF records.");
+ for(const p of paths){
+  if(!p||p.length>2000||/[\u0000-\u001f]/.test(p)||p.split("/").some(seg=>seg===".."||["__proto__","prototype","constructor"].includes(seg.toLowerCase())))throw new Error("Backup contains an invalid PDF path.");
+  const r=source[p];if(!r||typeof r!=="object"||!Array.isArray(r.ann||[])||!Array.isArray(r.qs||[]))throw new Error("Backup contains an invalid PDF record.");
+  const ids=new Set(),qs=[];if(r.qs.length>20000||(r.ann||[]).length>200000)throw new Error("A backup record is too large.");
+  for(const q of (r.qs||[])){
+   if(!q||typeof q!=="object"||typeof q.id!=="string"||!q.id||q.id.length>200||ids.has(q.id)||!Number.isInteger(q.p)||q.p<1||!Array.isArray(q.r)||q.r.length!==4||!q.r.every(Number.isFinite)||typeof q.label!=="string")throw new Error("Backup contains an invalid or duplicate question.");
+   if(q.work!==undefined&&(!q.work||typeof q.work!=="object"||Array.isArray(q.work)))throw new Error("Backup contains an invalid workspace.");ids.add(q.id);qs.push(q);
+  }
+  out[p]={saved:Number.isFinite(+r.saved)?+r.saved:0,subj:typeof r.subj==="string"?r.subj:"",ann:r.ann||[],qs};
+ }
+ return out;
 }
-function loadReader(p){curPdf=p;const f=$("vf");f.src="about:blank";const subject=subjectForPath(p);setTimeout(()=>{f.src="reader.html?s="+encodeURIComponent(subject)+"#"+encodeURIComponent(p)},30)}
-const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-function collectAll(){const pdfs={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||k.slice(0,3)!=="rd:")continue;const p=k.slice(3),r=lsGet(k)||{};
-  pdfs[p]={saved:r.saved||0,ann:r.ann||[],qs:(r.qs||[]).map(q=>({...q,work:lsGet("pg:"+p+"::"+q.id)||{}}))}}
- return{app:"icai-library",v:3,saved:new Date().toISOString(),pdfs}}
-function applyAll(o){const list=o.pdfs||(o.pdf?{[o.pdf]:{saved:Date.now(),ann:o.ann||[],qs:o.qs||[]}}:null);if(!list)throw new Error("bad file");let np=0,nq=0;
- for(const p in list){const r=list[p],cur=lsGet("rd:"+p);if(cur&&(cur.saved||0)>(r.saved||0))continue;
-  lsSet("rd:"+p,{saved:r.saved||Date.now(),ann:r.ann||[],qs:(r.qs||[]).map(({work,...q})=>q)});(r.qs||[]).forEach(q=>q.work&&lsSet("pg:"+p+"::"+q.id,q.work));np++;nq+=(r.qs||[]).length}return[np,nq]}
-function downloadAll(o){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:"application/json"}));a.download="ICAI_Library_Work.json";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+function applyAll(o){
+ const list=validateBackup(o),writes=[],skipped=[];
+ for(const p of Object.keys(list)){
+  const r=list[p],cur=lsGet("rd:"+p);
+  if(cur&&(+cur.saved||0)>=(+r.saved||0)){skipped.push(p);continue;}
+  writes.push(["rd:"+p,{saved:r.saved||Date.now(),subj:r.subj||"",ann:r.ann,qs:r.qs.map(({work,...q})=>q)}]);
+  for(const q of r.qs)if(q.work)writes.push(["pg:"+p+"::"+q.id,q.work]);
+ }
+ const before=new Map();
+ try{for(const [k,v] of writes){before.set(k,localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v));}}
+ catch(e){for(const [k,v] of before){try{v===null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(_){}}throw new Error("Import failed because browser storage is unavailable or full. Existing data was restored where possible; export a backup and free storage.");}
+ return {pdfs:writes.filter(([k])=>k.startsWith("rd:")).length,questions:writes.filter(([k])=>k.startsWith("rd:")).reduce((n,[,r])=>n+r.qs.length,0),skipped:skipped.length};
+}
+
+function collectAll(){const pdfs={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||k.slice(0,3)!=="rd:")continue;const p=k.slice(3),r=lsGet(k)||{};pdfs[p]={saved:r.saved||0,subj:r.subj||"",ann:r.ann||[],qs:(r.qs||[]).map(q=>({...q,work:lsGet("pg:"+p+"::"+q.id)||{}}))}}}catch(e){throw new Error("Browser storage is unavailable; cannot export saved work.")}return{app:"icai-library",v:3,saved:new Date().toISOString(),pdfs}}
+function downloadAll(o){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:"application/json"}));a.download="ICAI_Library_Work_"+new Date().toISOString().slice(0,10)+".json";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),3800)}
-$("xw").onclick=()=>{const o=collectAll(),n=Object.keys(o.pdfs).length;downloadAll(o);toast("Exported: "+n+" PDF(s) in one file (ICAI_Library_Work.json)")};
+$("xw").onclick=()=>{try{const o=collectAll(),n=Object.keys(o.pdfs).length;downloadAll(o);toast("Exported: "+n+" PDF(s) in one file.")}catch(e){toast(e.message||"Export failed.")}};
 $("lw").onclick=()=>$("lwf").click();
-$("lwf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const o=JSON.parse(await f.text());if(o.app!=="icai-library")throw 0;const [p,q]=applyAll(o);toast("Restored: "+p+" PDF(s), "+q+" question(s)");
- if($("viewer").classList.contains("on")&&curPdf)loadReader(curPdf)}catch(_){toast("Ye valid work file nahi hai.")}};
+$("lwf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{if(f.size>50*1024*1024)throw new Error("Backup is larger than 50 MB.");const o=JSON.parse(await f.text());const r=applyAll(o);toast("Imported "+r.pdfs+" PDF(s), "+r.questions+" question(s); skipped "+r.skipped+" newer/equal local record(s).");
+ if($("viewer").classList.contains("on")&&curPdf)loadReader(curPdf)}catch(err){toast(err&&err.message?err.message:"Invalid backup file; no changes imported.")}};
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
 $("close").onclick=()=>{play("back");closeV()};
 
 let tm;$("q").addEventListener("input",e=>{clearTimeout(tm);const v=e.target.value.trim().toLowerCase();play("tick");if(!v){main();return}
- tm=setTimeout(()=>{const w=v.split(/\s+/),M=$("main");const hit=vis().filter(f=>{const s=SUBJ.find(j=>j.id===f.s);return w.every(x=>(f.path+" "+(s?s.name:"")).toLowerCase().includes(x))}).slice(0,80);
-  M.innerHTML="";M.append(Object.assign(document.createElement("div"),{className:"crumbs",textContent:"Search results"}));M.append(hit.length?ul(hit.map(f=>frow(f,1))):msg("No match. Try fewer words."))},250)});
+ tm=setTimeout(()=>{if(v!==$("q").value.trim().toLowerCase())return;const aliases={rtp:"revision test paper",mtp:"mock test paper",pyq:"past year question",accounts:"accounting",eco:"economics"};const w=v.split(/\s+/),M=$("main");const hit=vis().filter(f=>{const s=SUBJ.find(j=>j.id===f.s),text=(f.path+" "+(s?s.name:"")).toLowerCase();return w.every(x=>text.includes(x)||(aliases[x]&&text.includes(aliases[x])))});
+  M.innerHTML="";M.append(Object.assign(document.createElement("div"),{className:"crumbs",textContent:"Search results"}));M.append(hit.length?ul(hit.map(f=>frow(f,1))):msg("No match. Try fewer words."));if(hit.length>80)M.append(msg(hit.length+" results. Refine your search to narrow the list."))},250)});
 
 $("main").append(msg("Loading your library..."));
 load().then(()=>{eds=[...new Set(files.map(f=>f.path.split("/")[0]).filter(x=>/^ENG_SUB_/.test(x)))].sort(NC.compare).reverse();
- const sv=localStorage.getItem("ed");ed=sv&&(sv==="all"||eds.includes(sv))?sv:(eds[0]||"all");edLabel();render()}).catch(()=>{$("main").innerHTML="";$("main").append(msg("Could not load files. Check your internet and refresh."))});
+ let sv=null;try{sv=localStorage.getItem("ed")}catch(_){}ed=sv&&(sv==="all"||eds.includes(sv))?sv:(eds[0]||"all");edLabel();render()}).catch(err=>{$("main").innerHTML="";$("main").append(msg("Could not load files. Check your internet, then refresh. "+(err&&err.message?err.message:"")));const b=document.createElement("button");b.className="pill";b.textContent="Retry";b.onclick=()=>location.reload();$("main").append(b)});
 </script>
 </body>
 </html>

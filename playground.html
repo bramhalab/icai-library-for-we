@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="color-scheme" content="light"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Practice Playground</title>
 <style>
-:root{--paper:#F3EEE2;--dark:#E8E0CC;--ink:#1E2A38;--soft:#4A5568;--ledger:#8C6B3F;--acc:#1E4D6B;--rule:#C9BEA0;--card:#FBF8F0}
-@media (prefers-color-scheme:dark){:root{--paper:#1b1f26;--dark:#252b34;--ink:#ece6d6;--soft:#a9b0bb;--ledger:#d2a869;--acc:#7fb8d9;--rule:#3a424e;--card:#222831}}
+:root{color-scheme:light;--paper:#F3EEE2;--dark:#E8E0CC;--ink:#1E2A38;--soft:#4A5568;--ledger:#8C6B3F;--acc:#1E4D6B;--rule:#C9BEA0;--card:#FBF8F0}
 *{box-sizing:border-box}[hidden]{display:none!important}
 html,body{max-width:100%;overflow-x:hidden}body{margin:0;padding:10px 10px 90px;background:var(--paper);color:var(--ink);font:16px/1.45 Georgia,serif}
 button{font:inherit;color:inherit;cursor:pointer}input,textarea{font:inherit;color:var(--ink)}
@@ -63,7 +62,6 @@ button{font:inherit;color:inherit;cursor:pointer}input,textarea{font:inherit;col
 <script>
 const $=id=>document.getElementById(id);
 const qp=new URLSearchParams(location.search);let qsub=qp.get("s")||"";
-const subjectLocked=qp.get("locked")==="1";
 let ac;const play=()=>{if(localStorage.getItem("mute")==="1")return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();
  const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;o.type="square";o.frequency.value=1800;g.gain.setValueAtTime(.05,t);g.gain.exponentialRampToValueAtTime(.001,t+.04);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+.04)}catch(e){}};
 const D=[];
@@ -189,12 +187,12 @@ const FR={law:[["Issue","What is the legal question?"],["Legal provision","Secti
 /* ---------- tabs ---------- */
 function build(){$("pg").innerHTML='<div class="bar"><div class="tabs" id="tabs"></div><div class="tabs" id="subj"></div></div>'+Object.keys(TT).map(k=>'<div class="tp" id="t'+k+'" hidden></div>').join("")}
 function renderTabs(){const T=$("tabs");T.innerHTML="";BY[subj].forEach(id=>{const b=document.createElement("button");b.className=id===tab?"on":"";b.title=b.ariaLabel=TT[id];b.innerHTML=ic(IC[id]);b.onclick=()=>show(id);T.append(b)});
- const S=$("subj");S.innerHTML='<span id="subl"></span>';$("subl").textContent=SN[subj];S.hidden=subjectLocked}
+ const S=$("subj");S.innerHTML='<span id="subl"></span>';$("subl").textContent=SN[subj]}
 function show(id){tab=id;document.querySelectorAll("#tabs button").forEach((b,i)=>b.classList.toggle("on",BY[subj][i]===id));
  document.querySelectorAll(".tp").forEach(p=>p.hidden=p.id!=="t"+id);if(!built[id]){built[id]=1;FILL[id]()}else if(id==="a"||id==="r"||id==="d")FILL[id]();play()}
 function pgLoad(){try{pgS=JSON.parse(localStorage.getItem("pg:"+pgPath))||{}}catch(e){pgS={}}
  pgS.notes=pgS.notes||"";pgS.cards=pgS.cards||[];pgS.cards.forEach(c=>{if(!c.id)c.id=uid()});pgS.fr=pgS.fr||{};pgS.dia=pgS.dia||{tpl:"ds",items:[]};
- subj=BY[qsub]?qsub:(BY[pgS.subj]?pgS.subj:"acc");if(subjectLocked&&BY[qsub])subj=qsub;pgS.subj=subj;if(!BY[subj].includes(tab))tab="n";renderTabs();Object.keys(built).forEach(k=>REF[k]&&REF[k]());show(tab)}
+ subj=BY[qsub]?qsub:(BY[pgS.subj]?pgS.subj:"acc");pgS.subj=subj;if(!BY[subj].includes(tab))tab="n";renderTabs();Object.keys(built).forEach(k=>REF[k]&&REF[k]());show(tab)}
 
 /* ---------- notes (with subject-wise / commands) ---------- */
 const LAW=[
@@ -202,7 +200,7 @@ const LAW=[
 ["Contract Act","Acceptance / counter-offer","Sec 2(b): must be absolute and unqualified. A counter-offer rejects the original offer (Hyde v Wolverhampton)."],
 ["Contract Act","Valid contract (essentials)","Sec 2(h), Sec 10: offer + acceptance, intention to create legal relations, lawful consideration, capacity, free consent, lawful object, not expressly void, certainty (Sec 29), possibility (Sec 56)."],
 ["Contract Act","Legal relations","Social / domestic agreements are not contracts. Case: Balfour v Balfour."],
-["Contract Act","Consideration","Sec 2(d): past, present or future. Stranger to contract can sue but not stranger to consideration. Sec 25: agreement without consideration is void, except 25(1) natural love and affection (written, registered), 25(2) past voluntary service, 25(3) time-barred debt."],
+["Contract Act","Consideration","Sec 2(d): past, present or future. Stranger to consideration can sue (Chinnaya v. Ramayya), but a stranger to a contract generally cannot sue (privity of contract). Sec 25: agreement without consideration is void, except 25(1) natural love and affection (written, registered), 25(2) past voluntary service, 25(3) time-barred debt."],
 ["Contract Act","Capacity - minor","Sec 11: minor's agreement is void ab initio. Case: Mohori Bibee v Dharmodas Ghose. No estoppel, no ratification; minor may be beneficiary; necessaries (Sec 68) - estate liable, not the minor personally."],
 ["Contract Act","Free consent","Sec 14: coercion (Sec 15), undue influence (Sec 16), fraud (Sec 17), misrepresentation (Sec 18), mistake (Sec 20-22). Contract voidable at option of aggrieved party (Sec 19, 19A) except mistake - void."],
 ["Contract Act","Lawful object","Sec 23: unlawful if forbidden by law, defeats law, fraudulent, injures person/property, immoral or opposed to public policy - agreement is void."],
@@ -239,7 +237,7 @@ FILL.n=()=>{$("tn").innerHTML='<div id="slm" hidden></div><textarea id="notes" p
   const on=menu.querySelector(".on");if(on)on.scrollIntoView({block:"nearest"})};
  const pick=i=>{const it=items[i];if(!it)return;const v=ta.value,end=ta.selectionStart;ta.value=v.slice(0,tokStart)+(it.act?"":it.t())+v.slice(end);const c=tokStart+(it.act?0:it.t().length);ta.setSelectionRange(c,c);pgS.notes=ta.value;pgSave();close();ta.focus();if(it.act)it.act()};
  const upd=()=>{const before=ta.value.slice(0,ta.selectionStart),m=before.match(/(?:^|\s)\/([^\s\/]*)$/);if(!m){close();return}tokStart=before.length-m[1].length-1;const q=m[1].toLowerCase();
-  const all=slashItems();items=(q?all.filter(x=>q.split(/[\s-]+/).every(w=>x.s.includes(w))):all);pos=0;if(!items.length){close();return}menu.hidden=false;draw()};
+  const all=slashItems();items=(q?all.filter(x=>q.split(/[\s-]+/).every(w=>x.s.includes(w))):all).slice(0,40);pos=0;if(!items.length){close();return}menu.hidden=false;draw()};
  ta.oninput=()=>{pgS.notes=ta.value;pgSave();upd()};ta.onclick=ta.onkeyup=e=>{if(!/Arrow|Enter|Tab|Escape/.test(e.key||""))upd()};
  ta.onkeydown=e=>{if(menu.hidden)return;if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();pos=(pos+(e.key==="ArrowDown"?1:-1)+items.length)%items.length;draw()}else if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();pick(pos)}else if(e.key==="Escape"){e.preventDefault();close()}};
  REF.n=()=>{ta.value=pgS.notes;close()};REF.n()};
@@ -281,14 +279,14 @@ function cardEl(c){const d=document.createElement("div");d.className="acard"+(c.
   col.innerHTML='<div class="sh"></div><div class="rows"></div><button class="add">+ row</button><div class="tot"></div>';col.querySelector(".sh").textContent=h;
   const box=col.querySelector(".rows");c[k].forEach(v=>box.append(rowEl(d,c,v)));col.querySelector(".add").onclick=()=>{box.append(rowEl(d,c,["",""]));pgSave()};two.append(col)});
  const bl=d.querySelector(".bl");if(bl)bl.onclick=()=>{syncCard(d);const S=x=>x.reduce((a,r)=>a+num(r[1]),0),tl=S(c.l),tr=S(c.r),diff=Math.round(Math.abs(tl-tr)*100)/100;if(!diff)return;
-  const left=tl<tr;d.querySelectorAll(".rows")[left?0:1].append(rowEl(d,c,[left?"To Balancing figure":"By Balancing figure",String(diff)]));syncCard(d)};
+  const left=tl<tr;d.querySelectorAll(".rows")[left?0:1].append(rowEl(d,c,[((c.a==="Liabilities"||c.a==="Dr. Balances"||c.a==="Assets"||c.a==="Cr. Balances")?"Balancing figure (Difference)":(left?"To Balancing figure":"By Balancing figure")),String(diff)]));syncCard(d)};
  upT(d,c);return d}
 function renderCards(){const C=$("cards");C.innerHTML="";pgS.cards.forEach(c=>C.append(cardEl(c)))}
 function addCard(d){const [a,b]=d.lab.split("|"),lab=(t,s)=>t.startsWith("~")?t.slice(1):(s?"By ":"To ")+t;
  pgS.cards.forEach(c=>c.open=false);pgS.cards.unshift({id:uid(),open:true,n:d.n,a,b,l:d.l.map(t=>[lab(t,0),""]),r:d.r?d.r.map(t=>[lab(t,1),""]):null,note:d.note});pgSave();renderCards();play()}
 FILL.f=()=>{$("tf").innerHTML='<input id="cmd" list="adl" placeholder="Command: account name (trading, revaluation, brs ...) then Enter" autocomplete="off" aria-label="Account command"><datalist id="adl">'+D.map(d=>'<option value="'+esc(d.n)+'">').join("")+'</datalist><div class="chips" id="chp"></div><div id="cards"></div>';
  const chips=l=>{$("chp").innerHTML=l.map(d=>'<span class="chip" data-n="'+esc(d.n)+'">'+esc(d.n)+"</span>").join("")};
- $("cmd").oninput=()=>{const v=$("cmd").value.trim();chips(v.length<2?[]:find(v))};
+ $("cmd").oninput=()=>{const v=$("cmd").value.trim();chips(v.length<2?[]:find(v).slice(0,8))};
  $("cmd").onkeydown=e=>{if(e.key!=="Enter")return;const v=$("cmd").value.trim();if(/^(list|all|\?|help)$/i.test(v)){chips(D);return}
   const m=find(v);if(!m.length){$("chp").textContent="No account found. Type list to see all.";return}addCard(m[0]);$("cmd").value="";chips([])};
  $("chp").onclick=e=>{const n=e.target.dataset.n;if(n){addCard(D.find(d=>d.n===n));$("cmd").value="";chips([])}};REF.f=renderCards;renderCards()};
@@ -343,7 +341,7 @@ FILL.d=()=>{const P=$("td");let pen="k",tool=pgS.dia.tool||"sel",cur=null,sel=nu
   if(it.t==="s"){for(let i=0;i<it.pts.length;i++){const a=it.pts[i],b=it.pts[i+1]||a;if(segD(p,[a[0]*W,a[1]*H],[b[0]*W,b[1]*H])<10)return true}return false}
   const a=[it.a[0]*W,it.a[1]*H],b=[it.b[0]*W,it.b[1]*H];if(it.t==="l"||it.t==="a")return segD(p,a,b)<10;
   const x0=Math.min(a[0],b[0]),x1=Math.max(a[0],b[0]),y0=Math.min(a[1],b[1]),y1=Math.max(a[1],b[1]);
-  if(it.t==="r"){const e=8;return p[0]>=x0-e&&p[0]<=x1+e&&p[1]>=y0-e&&p[1]<=y1+e&&!(p[0]>x0+e&&p[0]<x1-e&&p[1]>y0+e&&p[1]<y1-e&&false)}
+  if(it.t==="r"){const e=8;return p[0]>=x0-e&&p[0]<=x1+e&&p[1]>=y0-e&&p[1]<=y1+e&&!(p[0]>x0+e&&p[0]<x1-e&&p[1]>y0+e&&p[1]<y1-e )}
   const cx=(x0+x1)/2,cy=(y0+y1)/2,rx=(x1-x0)/2+8,ry=(y1-y0)/2+8;return((p[0]-cx)/rx)**2+((p[1]-cy)/ry)**2<=1};
  /* handles in px: delete (top-right), rotate (above), resize (bottom-right) */
  const handles=(it,W,H)=>{if(it.t==="t"){const[w,h]=tbox(it,W),f=(x,y)=>{const r=rot(x,y,it.rot||0);return[it.x*W+r[0],it.y*H+r[1]]};
@@ -407,7 +405,7 @@ FILL.d=()=>{const P=$("td");let pen="k",tool=pgS.dia.tool||"sel",cur=null,sel=nu
   if(cur){if(cur.pts)cur.pts.push([p[0]/W,p[1]/H]);else cur.b=[p[0]/W,p[1]/H];draw();return}
   if(!drag||!sel)return;
   if(drag.m==="move"){const dx=p[0]-drag.last[0],dy=p[1]-drag.last[1];if(Math.abs(dx)+Math.abs(dy)>0){drag.moved=true;moveIt(sel,dx,dy,W,H);drag.last=p}}
-  else if(drag.m==="rot"){sel.rot=Math.atan2(p[1]-sel.y*H,p[0]-sel.x*W)+Math.PI/2;if(e.shiftKey||true){const st=Math.PI/12,r=Math.round(sel.rot/st)*st;if(Math.abs(sel.rot-r)<.07)sel.rot=r}}
+  else if(drag.m==="rot"){sel.rot=Math.atan2(p[1]-sel.y*H,p[0]-sel.x*W)+Math.PI/2;if(e.shiftKey){const st=Math.PI/12,r=Math.round(sel.rot/st)*st;if(Math.abs(sel.rot-r)<.07)sel.rot=r}}
   else if(drag.m==="size"){const d=Math.hypot(p[0]-sel.x*W,p[1]-sel.y*H);sel.sz=Math.max(.02,Math.min(.2,drag.s0*d/Math.max(8,drag.d0)))}
   else if(drag.m==="pa")sel.a=[p[0]/W,p[1]/H];else if(drag.m==="pb")sel.b=[p[0]/W,p[1]/H];
   draw()};
@@ -430,7 +428,7 @@ const cpush=s=>{if(CL.steps.length<150)CL.steps.push(s)};
 const setAcc=v=>{CL.acc=v;if(!isFinite(v))CL.err=true};
 function fresh(){if(CL.eq&&CL.sel<0){CL.acc=null;CL.op=null;CL.steps=[];CL.eq=false}}
 function cshow(){let t=CL.err?"E":CL.e!==""?CL.e:(CL.sel>=0&&CL.steps[CL.sel])?String(CL.steps[CL.sel].v):fmtN(CL.acc===null?0:CL.acc);if(t==="E")CL.err=true;
- if(CL.sep&&t!=="E"){const m=t.match(/^(-?)(\d+)(.*)$/);if(m)t=m[1]+m[2].replace(/\B(?=(\d{3})+(?!\d))/g,",")+m[3]}
+ if(CL.sep&&t!=="E"){const m=t.match(/^(-?)(\d+)(.*)$/);if(m)t=m[1]+m[2].replace(/(\d)(?=(\d\d)+\d$)/g,"$1,")+m[3]}
  $("lcd").textContent=t;$("ind").textContent=[CL.mem?"M":"",CL.gt?"GT":"",CL.sel>=0?"STEP "+(CL.sel+1):"",CL.op?SY[CL.op]:""].filter(Boolean).join("  ");ctape()}
 function ctape(){const T=$("tape");T.hidden=!CL.tape;if(!CL.tape)return;
  T.innerHTML=CL.steps.length?CL.steps.map((s,i)=>"<div"+(i===CL.sel?' class="on"':"")+">"+(i+1)+". "+(s.op?SY[s.op]+" ":"")+s.v+(s.pct?" %":"")+"</div>").join(""):"<div>No steps yet</div>"}
@@ -464,7 +462,7 @@ function press(k){const P=CL.prev;CL.prev=k;if(CL.err&&k!=="AC"&&k!=="C")return;
  case"DISP":CL.sep=!CL.sep;break;
  case"REV":CL.tape=!CL.tape;CL.sel=CL.tape&&CL.steps.length?CL.steps.length-1:-1;break;
  case"UP":case"DN":if(!CL.steps.length)break;if(!CL.tape){CL.tape=true;CL.sel=CL.steps.length-1}else CL.sel=Math.max(0,Math.min(CL.steps.length-1,(CL.sel<0?CL.steps.length:CL.sel)+(k==="UP"?-1:1)));break;
- case"CORR":if(CL.sel>=0&&CL.e!==""){CL.steps[CL.sel].v=parseFloat(CL.e);setAcc(runSteps(CL.steps));CL.op=null;CL.e="";CL.eq=true}else CL.e="";break}
+ case"CORR":if(CL.sel>=0&&CL.e!==""){const oldAcc=CL.acc;CL.steps[CL.sel].v=parseFloat(CL.e);const newAcc=runSteps(CL.steps);if(Number.isFinite(newAcc)&&oldAcc!==null)CL.gt+=(newAcc-oldAcc);setAcc(newAcc);CL.op=null;CL.e="";CL.eq=true}else CL.e="";break}
  cshow()}
 /*ENDCALC*/
 function calcHTML(){const B=(l,k,c)=>'<button data-k="'+k+'"'+(c?' class="'+c+'"':"")+">"+l+"</button>";
