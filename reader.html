@@ -39,14 +39,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 #tdisp{font:700 22px "Courier New",monospace;min-width:84px;text-align:center}#tdisp.over{color:#B3492F}
 #tlims{display:flex;gap:4px;margin-left:auto}#tlims button{min-width:30px;height:28px;padding:0 7px;border:1.5px solid var(--rule);border-radius:14px;background:var(--card);font:12px Georgia,serif}
 #tlims button.on,#qhead #qtog.on{border-color:var(--acc);background:var(--acc);color:var(--paper)}
+#pages{touch-action:pan-x pan-y}
+#info{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:6px 14px;border-radius:16px;font:13px "Courier New",monospace;opacity:0;transition:opacity .25s;z-index:60;pointer-events:none;max-width:92vw;text-align:center}#info.on{opacity:.92}
+.warn{background:#B3492F!important;border-color:#B3492F!important;color:#fff!important}
 </style></head><body>
 <div id="top">
  <div class="g" id="tools"><button data-t="sel" class="on" title="Text select / scroll" aria-label="Text select / scroll"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6M9 20h6M12 4v16"/></svg></button><button data-t="hl" title="Highlight text (drag over text)" aria-label="Highlight text (drag over text)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5l5 5-8 8-5-5z"/><path d="M6.5 12.5L4 18l3.5.5 3-2.5"/><path d="M13 21h8" stroke-width="3" opacity=".4"/></svg></button><button data-t="pen" title="Pen" aria-label="Pen"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button><button data-t="mk" title="Marker" aria-label="Marker"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16c3-7 5 3 9-3s6 1 9-5" stroke-width="5" opacity=".5"/></svg></button><button data-t="er" title="Eraser" aria-label="Eraser"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21h13"/><path d="M5.5 13.5L13 6l5 5-7.5 7.5a2 2 0 0 1-2.8 0l-2.2-2.2a2 2 0 0 1 0-2.8z"/></svg></button><button data-t="q" title="Select question" aria-label="Select question"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5" stroke-dasharray="3 2.5"/><path d="M9.7 10a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1.1.8-1.1 1.6"/><path d="M12 16.6v.01" stroke-width="2.6"/></svg></button></div>
  <div class="g" id="cols"></div>
  <div class="g" id="sizes"><button data-w=".0025" title="Thin" aria-label="Thin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg></button><button data-w=".005" class="on" title="Medium" aria-label="Medium"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor" stroke="none"/></svg></button><button data-w=".01" title="Thick" aria-label="Thick"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="currentColor" stroke="none"/></svg></button></div>
- <div class="g"><button id="undo" title="Undo (Ctrl+Z)" aria-label="Undo (Ctrl+Z)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="zo" title="Zoom out" aria-label="Zoom out"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6"/></svg></button><button id="zi" title="Zoom in" aria-label="Zoom in"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6M11 8v6"/></svg></button><button id="qeye" title="Hide / show question boxes on the PDF" aria-label="Hide or show question boxes"></button></div>
+ <div class="g"><button id="undo" title="Undo (Ctrl+Z)" aria-label="Undo (Ctrl+Z)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="zo" title="Zoom out" aria-label="Zoom out"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6"/></svg></button><button id="zi" title="Zoom in" aria-label="Zoom in"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6M11 8v6"/></svg></button><button id="qeye" title="Hide / show question boxes on the PDF" aria-label="Hide or show question boxes"></button><button id="fw" title="Fit page width (100%)" aria-label="Fit width"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M7 9l-3 3 3 3M17 9l3 3-3 3"/></svg></button><button id="fp" title="Fit the whole page on screen" aria-label="Fit page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="1.5"/><path d="M3 9v6M21 9v6M3 9l-1.5 1.5M3 9l1.5 1.5M21 15l-1.5-1.5M21 15l1.5-1.5"/></svg></button></div>
  <div class="g"><button id="save" title="Export ALL work (one JSON file)" aria-label="Export all work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/></svg></button><button id="load" title="Import work (.json)" aria-label="Import work"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 20h16"/></svg></button><input type="file" id="lf" accept=".json,application/json" hidden><button id="ptog" title="Practice workspace" aria-label="Practice workspace"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 7h7"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01" stroke-width="2.6"/></svg></button></div>
 </div>
+<div id="info" role="status"></div>
 <button id="fab" title="Tools (drag me anywhere)" aria-label="Tools"></button>
 <div id="body"><div id="pages"><div class="msg">PDF load ho raha hai ...</div></div>
  <aside id="side" hidden>
@@ -81,7 +85,7 @@ document.querySelectorAll("#tools button").forEach(b=>b.onclick=()=>{tool=b.data
 COLORS.forEach((c,i)=>{const b=document.createElement("button");b.className="dot"+(i?"":" on");b.style.background=c;b.title=c;b.onclick=()=>{color=c;document.querySelectorAll(".dot").forEach(x=>x.classList.toggle("on",x===b))};$("cols").append(b)});
 document.querySelectorAll("#sizes button").forEach(b=>b.onclick=()=>{lw=+b.dataset.w;document.querySelectorAll("#sizes button").forEach(x=>x.classList.toggle("on",x===b))});
 $("undo").onclick=()=>undo();addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="z"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undo()}});
-$("zi").onclick=()=>zoom(1.2);$("zo").onclick=()=>zoom(1/1.2);
+$("zi").onclick=()=>zoom(1.2);$("zo").onclick=()=>zoom(1/1.2);$("fw").onclick=()=>setZ(1);$("fp").onclick=()=>fitPage();
 $("ptog").onclick=()=>showSide($("side").hidden);
 function showSide(on){$("side").hidden=!on;$("body").classList.toggle("has-side",on);$("ptog").classList.toggle("on",on)}
 
@@ -150,13 +154,25 @@ async function renderPage(pg){if(pg.done||pg.busy)return;pg.busy=true;const tok=
   pdfjsLib.renderTextLayer({textContentSource:tc,textContent:tc,container:pg.tl,viewport:vp,textDivs:[]});pg.done=true;drawOv(pg)}
  catch(e){console.warn(e)}finally{pg.busy=false}}
 function unrender(pg){pg.tok++;pg.done=false;pg.cv.width=pg.cv.height=pg.ov.width=pg.ov.height=0;pg.tl.innerHTML=""}
-function buildPages(){if(obs)obs.disconnect();pagesEl.innerHTML="";pages=[];const dpr=Math.min(window.devicePixelRatio||1,1.5),Wc=Math.max(260,(pagesEl.clientWidth-24)*Z);
+function buildPages(){if(obs)obs.disconnect();pagesEl.innerHTML="";pages=[];const dpr=Math.min(window.devicePixelRatio||1,1.5),Wc=Math.max(120,(pagesEl.clientWidth-24)*Z);
  obs=new IntersectionObserver(es=>es.forEach(e=>{const pg=e.target._pg;e.isIntersecting?renderPage(pg):unrender(pg)}),{root:pagesEl,rootMargin:"1200px 0px"});
  vps.forEach((v,i)=>{const el=document.createElement("div");el.className="page";const W=Wc,H=W*v.h/v.w;el.style.width=W+"px";el.style.height=H+"px";
   el.innerHTML='<canvas></canvas><div class="tl"></div><canvas class="ov"></canvas>';
   const pg={n:i+1,el,W,H,vw:v.w,dpr,tok:0,done:false,busy:false,cv:el.children[0],tl:el.children[1],ov:el.children[2]};el._pg=pg;bindOv(pg);pages.push(pg);pagesEl.append(el);obs.observe(el)})}
 let vps=[];
-function zoom(f){const r=pagesEl.scrollTop/Math.max(1,pagesEl.scrollHeight);Z=Math.max(.5,Math.min(3,Z*f));buildPages();pagesEl.scrollTop=r*pagesEl.scrollHeight}
+const Zmin=.25,Zmax=5;
+function curPage(){const st=pagesEl.scrollTop;let k=0;pages.forEach((p,i)=>{if(p.el.offsetTop<=st+40)k=i});const p=pages[k];return{k,f:p?(st-p.el.offsetTop)/p.H:0}}
+function info(t,ms){const e=$("info");e.textContent=t;e.classList.add("on");clearTimeout(info.t);info.t=setTimeout(()=>e.classList.remove("on"),ms||1400)}
+function flash(){const c=curPage();info("Page "+(c.k+1)+" / "+pages.length+"  \u00b7  "+Math.round(Z*100)+"%")}
+function setZ(z){const c=curPage();Z=Math.max(Zmin,Math.min(Zmax,z));buildPages();const p=pages[c.k];if(p)pagesEl.scrollTop=p.el.offsetTop+c.f*p.H;flash()}
+const zoom=f=>setZ(Z*f);
+function fitPage(){const c=curPage(),v=vps[c.k]||vps[0];if(!v)return;const W1=Math.max(120,pagesEl.clientWidth-24);setZ(Math.min(1,(pagesEl.clientHeight-24)/(W1*v.h/v.w)))}
+pagesEl.addEventListener("scroll",()=>{cancelAnimationFrame(flash.r);flash.r=requestAnimationFrame(()=>{if(pages.length)flash()})},{passive:true});
+pagesEl.addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();zoom(e.deltaY<0?1.1:1/1.1)}},{passive:false});
+let pz=null;const dist=e=>Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+pagesEl.addEventListener("touchstart",e=>{if(e.touches.length===2)pz={d:dist(e),z:Z,r:1}},{passive:true});
+pagesEl.addEventListener("touchmove",e=>{if(pz&&e.touches.length===2){e.preventDefault();pz.r=dist(e)/pz.d;info(Math.round(Math.max(Zmin,Math.min(Zmax,pz.z*pz.r))*100)+"%")}},{passive:false});
+pagesEl.addEventListener("touchend",e=>{if(pz&&e.touches.length<2){const z=pz.z*pz.r,ch=Math.abs(pz.r-1)>.04;pz=null;if(ch)setZ(z)}});
 
 /* ---------- questions ---------- */
 async function cropOf(q){const page=await pdf.getPage(q.p),vp=page.getViewport({scale:2.2}),c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
@@ -169,9 +185,11 @@ async function openQ(id){if(S.cur!==id)tStop();S.cur=id;showSide(true);renderQs(
 function renderQs(){const ch=$("chips");ch.innerHTML="";S.qs.forEach(q=>{const b=document.createElement("button");b.textContent=q.label;b.className=q.id===S.cur?"on":"";b.onclick=()=>openQ(q.id);ch.append(b)});
  const q=S.qs.find(z=>z.id===S.cur);$("qhead").hidden=$("wk").hidden=!q;$("qimg").hidden=!q||imgHidden;$("qnone").hidden=!!q;$("qtimer").hidden=!q||!timerOpen;if(q){$("qlab").value=q.label;tShow()}}
 $("qlab").oninput=()=>{const q=S.qs.find(z=>z.id===S.cur);if(q){q.label=$("qlab").value;persist();renderQs();redrawAll()}};
-$("qdel").onclick=()=>{const q=S.qs.find(z=>z.id===S.cur);if(!q||!confirm(q.label+" aur uska practice work delete karna hai?"))return;
+const delQ=()=>{const q=S.qs.find(z=>z.id===S.cur);if(!q)return;
  tStop();S.qs=S.qs.filter(z=>z!==q);S.hist=S.hist.filter(h=>h[1]!==q);try{localStorage.removeItem("pg:"+path+"::"+q.id)}catch(e){}
  S.cur=null;$("wk").dataset.k="";$("wk").src="about:blank";persist();redrawAll();if(S.qs.length)openQ(S.qs[0].id);else{renderQs();showSide(false)}};
+function twoTap(btn,fn){let t=0;const t0=btn.title;btn.onclick=()=>{if(t){clearTimeout(t);t=0;btn.classList.remove("warn");btn.title=t0;fn();return}btn.classList.add("warn");btn.title="Tap again to delete this question and its work";info("Tap the bin again to delete",1800);t=setTimeout(()=>{t=0;btn.classList.remove("warn");btn.title=t0},2500)}}
+twoTap($("qdel"),delQ);
 
 /* ---------- optional timer (per question; time spent is saved with the question) ---------- */
 const PLAY='<path d="M7 4l13 8-13 8z"/>',PAUSE='<path d="M8 5v14M16 5v14" stroke-width="3"/>',TIMER='<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5M12 2.5V6"/>',RESET='<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>';
@@ -198,7 +216,7 @@ addEventListener("pagehide",()=>tStop());
 $("save").onclick=()=>{tStop();downloadAll(collectAll())};
 $("load").onclick=()=>$("lf").click();
 $("lf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
- try{const o=JSON.parse(await f.text());if(o.app!=="icai-library")throw 0;const [p,q]=applyAll(o);alert("Restored: "+p+" PDF(s), "+q+" question(s).");location.reload()}catch(_){alert("Ye valid work file nahi hai.")}};
+ try{const o=JSON.parse(await f.text());if(o.app!=="icai-library")throw 0;const [p,q]=applyAll(o);info("Restored: "+p+" PDF(s), "+q+" question(s)",2500);setTimeout(()=>location.reload(),1200)}catch(_){info("Ye valid work file nahi hai.",2500)}};
 
 /* ---------- start ---------- */
 (async()=>{

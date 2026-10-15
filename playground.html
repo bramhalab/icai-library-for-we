@@ -59,6 +59,19 @@ button{font:inherit;color:inherit;cursor:pointer}input,textarea{font:inherit;col
 .kg button:active{transform:translateY(2px);box-shadow:none}
 .kg .sm{font-size:9px;line-height:1.1}.kg .pu{background:#7a1f6e}.kg .p{grid-row:span 2;height:auto}.kg .lt{background:#e5e5e5;color:#222}
 .kg i{display:block}.cap{grid-column:5/7;text-align:center;font:9px system-ui;color:#ccc;align-self:end}
+#ws{padding-bottom:40vh}
+.blk{display:flex;gap:2px;align-items:flex-start;margin:2px 0}.blk>.gp{opacity:.35;margin-top:6px}.blk:hover>.gp{opacity:1}.blk.dragging{opacity:.5}
+.bc{flex:1;min-width:0;position:relative}
+.bc textarea{display:block;width:100%;resize:none;overflow:hidden;border:0;background:transparent;font:16px/1.6 Georgia,serif;padding:4px 6px;min-height:30px;outline:none;border-radius:4px}
+.bc textarea:focus{background:var(--card);box-shadow:inset 0 0 0 1px var(--rule)}
+.hd{width:100%;border:0;border-bottom:2px solid var(--ledger);background:transparent;font:700 20px Georgia,serif;color:var(--acc);padding:6px 4px;outline:none}
+.fx{display:flex;gap:6px;align-items:flex-start;background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--ledger);padding:6px 10px}.fx>div{flex:1;min-width:0}
+.fx pre{margin:2px 0 0;white-space:pre-wrap;word-break:break-word;font:14px/1.4 'Courier New',monospace}
+.cmenu{position:absolute;left:0;right:0;top:100%;z-index:30;background:var(--card);border:1.5px solid var(--acc);border-radius:8px;box-shadow:0 8px 20px #0005;max-height:270px;overflow:auto}
+.ci{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;min-height:42px}.ci.on,.ci:hover{background:var(--dark)}.ci-i{color:var(--acc);display:flex}.ci-t{font-weight:700;font-size:14px}
+.ci small{margin-left:auto;color:var(--soft);font:11px 'Courier New',monospace;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dwrap{position:relative}.dtxt{position:absolute;transform:translate(-4px,-16px);width:150px;font:16px Georgia,serif;padding:3px 6px;border:1.5px solid var(--acc);background:var(--card);color:var(--ink);z-index:3}
+.warn{background:#B3492F!important;border-color:#B3492F!important;color:#fff!important}
 </style></head><body><div id="pg"></div>
 <script>
 const $=id=>document.getElementById(id);
@@ -125,11 +138,12 @@ const IC={n:'<path d="M4 4h12l4 4v12H4z"/><path d="M8 11h8M8 15h8"/>',f:'<rect x
  copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/>',
  undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',plus:'<path d="M12 5v14M5 12h14"/>',pen:'<path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>',txt:'<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',
  ax:'<path d="M5 4v15h15"/>',ds:'<path d="M5 4v15h15"/><path d="M8 7l9 8M8 16l9-9"/>',ppc:'<path d="M5 4v15h15"/><path d="M7 7c8 0 10 4 10 10"/>',cost:'<path d="M5 4v15h15"/><path d="M8 7c2 12 6 12 10 0"/>'};
-const TT={n:"Working notes",f:"Formats (account layouts)",r:"Formulas",a:"Answer frame",d:"Diagram pad",c:"Calculator"};
-const BY={acc:["n","f","r","c"],law:["n","a"],qa:["n","r","c"],eco:["n","a","d","r","c"]};
+const TT={n:"Workspace (type / for formats, formulas, templates)",r:"Formulas",a:"Answer frame",d:"Diagram pad",c:"Calculator"};
+const BY={acc:["n","r","c"],law:["n","a"],qa:["n","r","c"],eco:["n","a","d","r","c"]};
 const SN={acc:"Accounting",law:"Business Laws",qa:"Quantitative Aptitude",eco:"Business Economics"};
 let pgPath="",pgS={},subj="acc",tab="n";const built={},REF={},FILL={};
 const pgSave=()=>{try{localStorage.setItem("pg:"+pgPath,JSON.stringify(pgS))}catch(e){}};
+function twoTap(btn,fn){let t=0;const t0=btn.title;btn.onclick=()=>{if(t){clearTimeout(t);t=0;btn.classList.remove("warn");btn.title=t0;fn();return}btn.classList.add("warn");btn.title="Tap again to confirm";t=setTimeout(()=>{t=0;btn.classList.remove("warn");btn.title=t0},2500)}}
 
 /* ---------- formulas ---------- */
 const FM={
@@ -188,20 +202,18 @@ const FR={law:[["Issue","What is the legal question?"],["Legal provision","Secti
 /* ---------- tabs ---------- */
 function build(){$("pg").innerHTML='<div class="bar"><div class="tabs" id="tabs"></div><div class="tabs" id="subj"></div></div>'+Object.keys(TT).map(k=>'<div class="tp" id="t'+k+'" hidden></div>').join("")}
 function renderTabs(){const T=$("tabs");T.innerHTML="";BY[subj].forEach(id=>{const b=document.createElement("button");b.className=id===tab?"on":"";b.title=b.ariaLabel=TT[id];b.innerHTML=ic(IC[id]);b.onclick=()=>show(id);T.append(b)});
+ const sb=document.createElement("button");sb.title=sb.ariaLabel="Command: insert formats, formulas, templates";sb.innerHTML=ic('<path d="M8 20L16 4"/>');
+ sb.onclick=()=>{show("n");const ta=[...$("ws").querySelectorAll("textarea")].pop();ta.focus();ta.value=(ta.value&&!ta.value.endsWith("\n")?ta.value+"\n":ta.value)+"/";ta.setSelectionRange(ta.value.length,ta.value.length);ta.dispatchEvent(new Event("input"))};T.append(sb);
  const S=$("subj");S.innerHTML="";Object.keys(SN).forEach(k=>{const b=document.createElement("button");b.className=k===subj?"on":"";b.title=b.ariaLabel=SN[k];b.innerHTML=ic(IC[k]);
   b.onclick=()=>{subj=pgS.subj=k;pgSave();if(!BY[k].includes(tab))tab="n";renderTabs();show(tab)};S.append(b)})}
 function show(id){tab=id;document.querySelectorAll("#tabs button").forEach((b,i)=>b.classList.toggle("on",BY[subj][i]===id));
- document.querySelectorAll(".tp").forEach(p=>p.hidden=p.id!=="t"+id);if(!built[id]){built[id]=1;FILL[id]()}else if(id==="a"||id==="r"||id==="d")FILL[id]();play()}
+ document.querySelectorAll(".tp").forEach(p=>p.hidden=p.id!=="t"+id);if(!built[id]){built[id]=1;FILL[id]()}else if(id==="n"||id==="a"||id==="r"||id==="d")FILL[id]();play()}
 function pgLoad(){try{pgS=JSON.parse(localStorage.getItem("pg:"+pgPath))||{}}catch(e){pgS={}}
- pgS.notes=pgS.notes||"";pgS.cards=pgS.cards||[];pgS.cards.forEach(c=>{if(!c.id)c.id=uid()});pgS.fr=pgS.fr||{};pgS.dia=pgS.dia||{tpl:"ds",items:[]};
- subj=pgS.subj||(BY[qsub]?qsub:"acc");if(!BY[subj])subj="acc";if(!BY[subj].includes(tab))tab="n";renderTabs();Object.keys(built).forEach(k=>REF[k]&&REF[k]());show(tab)}
+ pgS.fr=pgS.fr||{};pgS.dia=pgS.dia||{tpl:"ds",items:[]};pgS.ws=pgS.ws||{};const base=pgS.subj||(BY[qsub]?qsub:"acc");
+ if((pgS.notes||(pgS.cards&&pgS.cards.length))&&!pgS.ws[base])pgS.ws[base]=[{id:uid(),t:"text",v:pgS.notes||""}].concat((pgS.cards||[]).map(c=>({id:uid(),t:"fmt",c:Object.assign(c,{id:c.id||uid()})})));
+ delete pgS.notes;delete pgS.cards;subj=BY[base]?base:"acc";if(!BY[subj].includes(tab))tab="n";renderTabs();Object.keys(built).forEach(k=>REF[k]&&REF[k]());show(tab)}
 
-/* ---------- notes ---------- */
-FILL.n=()=>{$("tn").innerHTML='<textarea id="notes" placeholder="Working notes: write your workings here. Saved automatically for this question." aria-label="Working notes"></textarea>';
- $("notes").oninput=()=>{pgS.notes=$("notes").value;pgSave()};REF.n=()=>{$("notes").value=pgS.notes};REF.n()};
-const addNote=t=>{pgS.notes=(pgS.notes?pgS.notes+"\n":"")+t;pgSave();if(built.n)REF.n()};
-
-/* ---------- formats (accounting) ---------- */
+/* ---------- workspace: notes + formats + formulas in one page; type / for commands ---------- */
 const num=v=>parseFloat(String(v).replace(/,/g,""))||0,fm=n=>n.toLocaleString("en-IN",{maximumFractionDigits:2});
 function evalAmt(v){const t=String(v).trim().replace(/,/g,"");if(!/^[0-9+\-*\/().\s]+$/.test(t)||!/[+\-*\/]/.test(t.replace(/^-/,"")))return v;
  try{const r=Function('"use strict";return ('+t+')')();return isFinite(r)?String(Math.round(r*100)/100):v}catch(e){return v}}
@@ -223,15 +235,13 @@ function dragger(e,item,cls,move,done){e.preventDefault();e.stopPropagation();co
 function rowDrag(e,row,d){dragger(e,row,"drag",(el,ev)=>{const over=el.closest(".r"),box=el.closest(".rows");
  if(over&&over!==row&&d.contains(over)){const b=over.getBoundingClientRect();over.parentNode.insertBefore(row,ev.clientY<b.top+b.height/2?over:over.nextSibling)}
  else if(!over&&box&&d.contains(box))box.append(row)},()=>syncCard(d))}
-function cardDrag(e,d){const C=$("cards");dragger(e,d,"dragging",(el,ev)=>{const over=el.closest(".acard");
- if(over&&over!==d&&over.parentNode===C){const b=over.getBoundingClientRect();C.insertBefore(d,ev.clientY<b.top+b.height/2?over:over.nextSibling)}},()=>{pgS.cards=[...C.children].map(x=>x._c);pgSave()})}
-function cardEl(c){const d=document.createElement("div");d.className="acard"+(c.open?" open":"");d._c=c;
- d.innerHTML='<div class="ah"><button class="gp" title="Drag to reorder formats" aria-label="Drag format">'+ic(IC.grip)+'</button><span class="ex">'+ic('<path d="M9 6l6 6-6 6"/>')+'</span><b></b><span class="sum"></span><button class="rm" title="Remove this format" aria-label="Remove this format">\u00d7</button></div>'+
+function mkCard(d){const [a,b]=d.lab.split("|"),lab=(t,s)=>t.startsWith("~")?t.slice(1):(s?"By ":"To ")+t;
+ return{id:uid(),open:true,n:d.n,a,b,l:d.l.map(t=>[lab(t,0),""]),r:d.r?d.r.map(t=>[lab(t,1),""]):null,note:d.note}}
+function cardEl(c,onRm){const d=document.createElement("div");d.className="acard"+(c.open?" open":"");d._c=c;
+ d.innerHTML='<div class="ah"><span class="ex">'+ic('<path d="M9 6l6 6-6 6"/>')+'</span><b></b><span class="sum"></span><button class="rm" title="Remove this format" aria-label="Remove this format">\u00d7</button></div>'+
   '<div class="cbody"><div class="two"></div><div class="acts"><button class="bl" title="Add the balancing figure to the smaller side" aria-label="Add balancing figure">'+ic(IC.bal)+'<span>Balance</span></button></div><div class="chk"></div><details><summary>Format tip</summary><p></p></details></div>';
  const head=d.querySelector(".ah");head.querySelector("b").textContent=c.n;d.querySelector("p").textContent=c.note||"";
- head.onclick=e=>{if(e.target.closest(".rm,.gp"))return;c.open=!c.open;d.classList.toggle("open",c.open);pgSave()};
- head.querySelector(".gp").onpointerdown=e=>cardDrag(e,d);
- head.querySelector(".rm").onclick=()=>{pgS.cards=pgS.cards.filter(z=>z!==c);pgSave();d.remove()};
+ head.onclick=e=>{if(e.target.closest(".rm"))return;c.open=!c.open;d.classList.toggle("open",c.open);pgSave()};head.querySelector(".rm").onclick=onRm;
  const two=d.querySelector(".two");if(!c.r){two.classList.add("one");d.querySelector(".chk").remove();d.querySelector(".bl").remove()}
  [["l",c.r?c.a:"Particulars"]].concat(c.r?[["r",c.b]]:[]).forEach(([k,h])=>{const col=document.createElement("div");col.className="side";
   col.innerHTML='<div class="sh"></div><div class="rows"></div><button class="add">+ row</button><div class="tot"></div>';col.querySelector(".sh").textContent=h;
@@ -239,22 +249,58 @@ function cardEl(c){const d=document.createElement("div");d.className="acard"+(c.
  const bl=d.querySelector(".bl");if(bl)bl.onclick=()=>{syncCard(d);const S=x=>x.reduce((a,r)=>a+num(r[1]),0),tl=S(c.l),tr=S(c.r),diff=Math.round(Math.abs(tl-tr)*100)/100;if(!diff)return;
   const left=tl<tr;d.querySelectorAll(".rows")[left?0:1].append(rowEl(d,c,[left?"To Balancing figure":"By Balancing figure",String(diff)]));syncCard(d)};
  upT(d,c);return d}
-function renderCards(){const C=$("cards");C.innerHTML="";pgS.cards.forEach(c=>C.append(cardEl(c)))}
-function addCard(d){const [a,b]=d.lab.split("|"),lab=(t,s)=>t.startsWith("~")?t.slice(1):(s?"By ":"To ")+t;
- pgS.cards.forEach(c=>c.open=false);pgS.cards.unshift({id:uid(),open:true,n:d.n,a,b,l:d.l.map(t=>[lab(t,0),""]),r:d.r?d.r.map(t=>[lab(t,1),""]):null,note:d.note});pgSave();renderCards();play()}
-FILL.f=()=>{$("tf").innerHTML='<input id="cmd" list="adl" placeholder="Command: account name (trading, revaluation, brs ...) then Enter" autocomplete="off" aria-label="Account command"><datalist id="adl">'+D.map(d=>'<option value="'+esc(d.n)+'">').join("")+'</datalist><div class="chips" id="chp"></div><div id="cards"></div>';
- const chips=l=>{$("chp").innerHTML=l.map(d=>'<span class="chip" data-n="'+esc(d.n)+'">'+esc(d.n)+"</span>").join("")};
- $("cmd").oninput=()=>{const v=$("cmd").value.trim();chips(v.length<2?[]:find(v).slice(0,8))};
- $("cmd").onkeydown=e=>{if(e.key!=="Enter")return;const v=$("cmd").value.trim();if(/^(list|all|\?|help)$/i.test(v)){chips(D);return}
-  const m=find(v);if(!m.length){$("chp").textContent="No account found. Type list to see all.";return}addCard(m[0]);$("cmd").value="";chips([])};
- $("chp").onclick=e=>{const n=e.target.dataset.n;if(n){addCard(D.find(d=>d.n===n));$("cmd").value="";chips([])}};REF.f=renderCards;renderCards()};
+
+const SNIP={acc:[["Working note","Working Note 1:\n"],["Journal entry","Dr.  ____________   \u20b9 ______\n    To  ____________   \u20b9 ______\n(Being ____________)"]],
+ law:[["Provision / Application / Conclusion","Legal provision:\nApplication:\nConclusion:"],["Case law note","Case: ____________\nPrinciple: ____________"],["Section note","Section __ of ____________ Act:\n"]],
+ qa:[["Given / Find / Solution","Given:\nTo find:\nSolution:\nAnswer:"]],eco:[["Definition / Points / Example","Definition:\nPoints:\n1. \n2. \nExample:"]]};
+const wsB=()=>pgS.ws[subj]=pgS.ws[subj]||[],tid=()=>({id:uid(),t:"text",v:""});let MENU=null;
+const grow=t=>{t.style.height="auto";t.style.height=Math.max(30,t.scrollHeight)+"px"};
+function closeMenu(){if(MENU){MENU.el.remove();MENU=null}}
+function renderWs(){closeMenu();const W=$("ws");if(!W)return;W.innerHTML="";const B=wsB();if(!B.length||B[B.length-1].t!=="text")B.push(tid());B.forEach(b=>W.append(blkEl(b)))}
+function addBlock(b){const B=wsB();if(!B.length||B[B.length-1].t!=="text")B.push(tid());B.splice(B.length-1,0,b);pgSave();if(built.n)renderWs()}
+function delBlk(b){const B=wsB();B.splice(B.indexOf(b),1);pgSave();renderWs()}
+function focusBlk(id,end){const w=[...$("ws").children].find(x=>x._b.id===id),t=w&&w.querySelector("textarea");if(t){t.focus();if(end)t.setSelectionRange(t.value.length,t.value.length)}}
+function blkEl(b){const w=document.createElement("div");w.className="blk";w._b=b;
+ w.innerHTML='<button class="gp" title="Drag to move" aria-label="Drag block">'+ic(IC.grip)+'</button><div class="bc"></div>';const c=w.querySelector(".bc");w.querySelector(".gp").onpointerdown=e=>blkDrag(e,w);
+ if(b.t==="text"){const t=document.createElement("textarea");t.rows=1;t.value=b.v;const B=wsB();t.placeholder=b===B[B.length-1]?"Write here ...  type  /  for formats, formulas and templates":"";t.setAttribute("aria-label","Working notes");c.append(t);bindText(t,b,w);setTimeout(()=>grow(t),0)}
+ else if(b.t==="h"){const i=document.createElement("input");i.className="hd";i.value=b.v;i.placeholder="Heading";i.oninput=()=>{b.v=i.value;pgSave()};c.append(i)}
+ else if(b.t==="fx"){c.innerHTML='<div class="fx"><div><div class="fn"></div><pre></pre></div><button class="rm" title="Remove" aria-label="Remove formula">\u00d7</button></div>';c.querySelector(".fn").textContent=b.n;c.querySelector("pre").textContent=b.f;c.querySelector(".rm").onclick=()=>delBlk(b)}
+ else if(b.t==="fmt")c.append(cardEl(b.c,()=>delBlk(b)));
+ return w}
+function blkDrag(e,w){const W=$("ws");dragger(e,w,"dragging",(el,ev)=>{const over=el.closest(".blk");if(over&&over!==w&&over.parentNode===W){const b=over.getBoundingClientRect();W.insertBefore(w,ev.clientY<b.top+b.height/2?over:over.nextSibling)}},
+ ()=>{const B=wsB();B.splice(0,B.length,...[...W.children].map(x=>x._b));pgSave();renderWs()})}
+function bindText(t,b,w){t.oninput=()=>{b.v=t.value;pgSave();grow(t);slash(t,b,w)};
+ t.onkeydown=e=>{if(MENU&&MENU.t===t){if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();menuMove(e.key==="ArrowDown"?1:-1)}else if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();pick(MENU.items[MENU.i])}else if(e.key==="Escape"){e.preventDefault();closeMenu()}return}
+  if(e.key==="Backspace"&&!t.value){const B=wsB(),i=B.indexOf(b);if(i>0&&i<B.length-1){e.preventDefault();B.splice(i,1);pgSave();renderWs()}}};
+ t.onblur=()=>setTimeout(()=>{if(MENU&&MENU.t===t)closeMenu()},180)}
+function cmdItems(q){const words=q.toLowerCase().split(/\s+/).filter(Boolean),hit=(...s)=>{const h=s.join(" ").toLowerCase();return words.every(w=>h.includes(w))},cmds=[],fmts=[],fxs=[];
+ cmds.push({t:"Heading",s:"Section title",ic:"txt",key:"heading title",block:()=>({id:uid(),t:"h",v:""})});
+ (SNIP[subj]||[]).forEach(x=>cmds.push({t:x[0],s:"Template",ic:"n",key:x[0]+" template",text:x[1]}));
+ BY[subj].forEach(id=>{if(id!=="n")cmds.push({t:TT[id].split(" (")[0],s:"Open tab",ic:id,key:TT[id]+" tab open calc",tab:id})});
+ if(subj==="acc")(words.length?find(q):D.filter(d=>/ledger|trading|profit and loss|balance sheet|cash book/i.test(d.n))).slice(0,6).forEach(d=>fmts.push({t:d.n,s:"Format",ic:"f",block:()=>({id:uid(),t:"fmt",c:mkCard(d)})}));
+ (FM[subj]||[]).forEach(x=>{if(words.length&&hit(x[0],x[1],x[2]))fxs.push({t:x[1],s:x[2].split("\n")[0].slice(0,48),ic:"r",block:()=>({id:uid(),t:"fx",n:x[1],f:x[2]})})});
+ const c2=cmds.filter(c=>!words.length||hit(c.t,c.key||""));const q0=words.join(" "),sc=x=>{const t=x.t.toLowerCase();return t.startsWith(q0)?0:t.includes(q0)?1:2};
+ return(words.length?c2.concat(fmts,fxs.slice(0,5)).map((x,i)=>[sc(x),i,x]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]).map(x=>x[2]):c2.concat(fmts)).slice(0,9)}
+function slash(t,b,w){const v=t.value,cp=t.selectionStart,ls=v.lastIndexOf("\n",cp-1)+1,m=/^\/(.*)$/.exec(v.slice(ls,cp));if(!m){closeMenu();return}
+ const items=cmdItems(m[1]);if(!items.length){closeMenu();return}
+ if(!MENU||MENU.t!==t){closeMenu();const el=document.createElement("div");el.className="cmenu";el.onmousedown=e=>e.preventDefault();w.querySelector(".bc").append(el);MENU={el,t,b,w,i:0,items:[],ls,cp}}
+ Object.assign(MENU,{items,ls,cp,i:0});drawMenu()}
+function drawMenu(){const M=MENU;M.el.innerHTML="";M.items.forEach((it,k)=>{const r=document.createElement("div");r.className="ci"+(k===M.i?" on":"");
+ r.innerHTML='<span class="ci-i">'+ic(IC[it.ic]||IC.n)+'</span><span class="ci-t"></span><small></small>';r.children[1].textContent=it.t;r.children[2].textContent=it.s||"";r.onclick=()=>pick(it);M.el.append(r)});
+ const on=M.el.querySelector(".on");if(on&&on.scrollIntoView)on.scrollIntoView({block:"nearest"})}
+const menuMove=d=>{MENU.i=(MENU.i+d+MENU.items.length)%MENU.items.length;drawMenu()};
+function pick(it){const M=MENU;if(!M||!it)return;const t=M.t,b=M.b,v=t.value,before=v.slice(0,M.ls).replace(/\n$/,""),after=v.slice(M.cp);closeMenu();const B=wsB(),i=B.indexOf(b);
+ if(it.tab){b.v=before&&after?before+"\n"+after:before+after;pgSave();renderWs();show(it.tab);return}
+ if(it.text){b.v=(before?before+"\n":"")+it.text+(after?"\n"+after:"");pgSave();renderWs();focusBlk(b.id,true);return}
+ const nb=it.block(),tail=after?{id:uid(),t:"text",v:after}:tid(),head=before?[Object.assign(b,{v:before})]:[];B.splice(i,1,...head,nb,tail);pgSave();renderWs();focusBlk(tail.id);play()}
+FILL.n=()=>{$("tn").innerHTML='<div id="ws"></div>';renderWs()};REF.n=()=>{if($("ws"))renderWs()};
 
 /* ---------- formulas ---------- */
 FILL.r=()=>{const L=FM[subj]||[],tops=["All"].concat([...new Set(L.map(x=>x[0]))]);let topic="All";
  $("tr").innerHTML='<input id="fq" placeholder="Search formula ..." aria-label="Search formula"><div class="chips" id="ft"></div><div id="fl"></div>';
  const draw=()=>{const q=$("fq").value.toLowerCase(),F=$("fl");F.innerHTML="";L.filter(x=>(topic==="All"||x[0]===topic)&&(x[1]+" "+x[2]).toLowerCase().includes(q)).forEach(x=>{
-   const d=document.createElement("div");d.className="fcard";d.innerHTML='<div><div class="fn"></div><pre></pre></div><button title="Add to working notes" aria-label="Add to working notes">'+ic(IC.plus)+'</button>';
-   d.querySelector(".fn").textContent=x[1];d.querySelector("pre").textContent=x[2];const b=d.querySelector("button");b.onclick=()=>{addNote(x[1]+": "+x[2].replace(/\n/g,"; "));b.classList.add("ok");setTimeout(()=>b.classList.remove("ok"),900)};F.append(d)})};
+   const d=document.createElement("div");d.className="fcard";d.innerHTML='<div><div class="fn"></div><pre></pre></div><button title="Add to workspace" aria-label="Add to workspace">'+ic(IC.plus)+'</button>';
+   d.querySelector(".fn").textContent=x[1];d.querySelector("pre").textContent=x[2];const b=d.querySelector("button");b.onclick=()=>{addBlock({id:uid(),t:"fx",n:x[1],f:x[2]});b.classList.add("ok");setTimeout(()=>b.classList.remove("ok"),900)};F.append(d)})};
  const ch=()=>{$("ft").innerHTML="";tops.forEach(t=>{const s=document.createElement("span");s.className="chip"+(t===topic?" on":"");s.textContent=t;s.onclick=()=>{topic=t;ch();draw()};$("ft").append(s)})};
  $("fq").oninput=draw;ch();draw()};
 
@@ -265,7 +311,7 @@ FILL.a=()=>{const P=$("ta"),F=FR[subj]||[],arr=pgS.fr[subj]=pgS.fr[subj]||[];P.i
   const grow=()=>{t.style.height="auto";t.style.height=Math.max(76,t.scrollHeight+2)+"px"};t.oninput=()=>{arr[i]=t.value;pgSave();grow();wc()};P.append(w);setTimeout(grow,0)});
  P.insertAdjacentHTML("beforeend",'<div class="acts"><span id="wc"></span><button id="cp" title="Copy the whole answer" aria-label="Copy answer">'+ic(IC.copy)+'</button><button id="cl" title="Clear this answer" aria-label="Clear answer">'+ic(IC.trash)+'</button></div>');
  $("cp").onclick=()=>{const t=F.map(([h],i)=>h+":\n"+(arr[i]||"")).join("\n\n");try{navigator.clipboard.writeText(t)}catch(e){}$("cp").classList.add("on");setTimeout(()=>$("cp").classList.remove("on"),900)};
- $("cl").onclick=()=>{if(confirm("Is answer ke saare boxes clear karne hain?")){pgS.fr[subj]=[];pgSave();FILL.a()}};wc();REF.a=FILL.a};
+ twoTap($("cl"),()=>{pgS.fr[subj]=[];pgSave();FILL.a()});wc();REF.a=FILL.a};
 
 /* ---------- diagram pad (economics) ---------- */
 const DCOL={k:"var(--ink)",b:"#3b82c4",r:"#d9534f",g:"#2f9e6b"};
@@ -277,7 +323,7 @@ function dTpl(c,W,H,t,ink){const X0=.12*W,X1=.92*W,Y0=.88*H,Y1=.08*H,L=(a,b,x,y)
  if(t==="cost"){c.beginPath();c.moveTo(.2*W,.2*H);c.quadraticCurveTo(.5*W,1.02*H,.85*W,.25*H);c.stroke();c.beginPath();c.moveTo(.2*W,.75*H);c.quadraticCurveTo(.62*W,.85*H,.9*W,.1*H);c.stroke();T("AC",.1,.2);T("MC",.86,.12)}}
 FILL.d=()=>{const P=$("td");let pen="k",mode="pen",cur=null;
  P.innerHTML='<div class="dtools"><span class="tabs" id="dtp"></span><span class="sp"></span><button data-m="pen" class="on" title="Pen" aria-label="Pen">'+ic(IC.pen)+'</button><button data-m="txt" title="Add a text label" aria-label="Text label">'+ic(IC.txt)+'</button></div>'+
-  '<div class="dtools" id="dcol"></div><div class="dtools"><button id="dun" title="Undo" aria-label="Undo">'+ic(IC.undo)+'</button><button id="dcl" title="Clear my drawing" aria-label="Clear drawing">'+ic(IC.trash)+'</button></div><canvas id="dcv"></canvas>';
+  '<div class="dtools" id="dcol"></div><div class="dtools"><button id="dun" title="Undo" aria-label="Undo">'+ic(IC.undo)+'</button><button id="dcl" title="Clear my drawing" aria-label="Clear drawing">'+ic(IC.trash)+'</button></div><div class="dwrap"><canvas id="dcv"></canvas></div>';
  const cv=$("dcv"),css=k=>k==="k"?getComputedStyle(document.body).color:DCOL[k];
  const draw=()=>{const d=Math.min(devicePixelRatio||1,2),W=cv.clientWidth,H=cv.clientHeight;if(!W)return;cv.width=W*d;cv.height=H*d;const c=cv.getContext("2d");c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,W,H);
   dTpl(c,W,H,pgS.dia.tpl,getComputedStyle(document.body).color);c.lineCap="round";c.lineJoin="round";
@@ -287,9 +333,12 @@ FILL.d=()=>{const P=$("td");let pen="k",mode="pen",cur=null;
  P.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{mode=b.dataset.m;P.querySelectorAll("[data-m]").forEach(x=>x.classList.toggle("on",x===b))});
  Object.keys(DCOL).forEach(k=>{const b=document.createElement("button");b.className="dc"+(k===pen?" on":"");b.style.background=css(k);b.title=k;b.onclick=()=>{pen=k;document.querySelectorAll("#dcol .dc").forEach(x=>x.classList.toggle("on",x===b))};$("dcol").append(b)});
  const pt=e=>{const b=cv.getBoundingClientRect();return[(e.clientX-b.left)/b.width,(e.clientY-b.top)/b.height]};
- cv.onpointerdown=e=>{e.preventDefault();const p=pt(e);if(mode==="txt"){const s=prompt("Label:");if(s){pgS.dia.items.push({t:"t",c:pen,x:p[0],y:p[1],s});pgSave();draw()}return}try{cv.setPointerCapture(e.pointerId)}catch(_){}cur={t:"s",c:pen,pts:[p]};draw()};
+ const labelAt=p=>{const i=document.createElement("input");i.className="dtxt";i.placeholder="Label";i.style.left=(p[0]*100)+"%";i.style.top=(p[1]*100)+"%";let done=false;
+  const fin=ok=>{if(done)return;done=true;const s=i.value.trim();i.remove();if(ok&&s){pgS.dia.items.push({t:"t",c:pen,x:p[0],y:p[1],s});pgSave();draw()}};
+  i.onkeydown=e=>{if(e.key==="Enter")fin(true);else if(e.key==="Escape")fin(false)};i.onblur=()=>fin(true);cv.parentNode.append(i);i.focus()};
+ cv.onpointerdown=e=>{e.preventDefault();const p=pt(e);if(mode==="txt"){labelAt(p);return}try{cv.setPointerCapture(e.pointerId)}catch(_){}cur={t:"s",c:pen,pts:[p]};draw()};
  cv.onpointermove=e=>{if(cur){cur.pts.push(pt(e));draw()}};const up=()=>{if(cur){pgS.dia.items.push(cur);cur=null;pgSave();draw()}};cv.onpointerup=up;cv.onpointercancel=up;
- $("dun").onclick=()=>{pgS.dia.items.pop();pgSave();draw()};$("dcl").onclick=()=>{if(confirm("Apna drawing clear karna hai?")){pgS.dia.items=[];pgSave();draw()}};
+ $("dun").onclick=()=>{pgS.dia.items.pop();pgSave();draw()};twoTap($("dcl"),()=>{pgS.dia.items=[];pgSave();draw()});
  REF.d=draw;addEventListener("resize",()=>{if(!$("td").hidden)draw()});setTimeout(draw,0)};
 
 /* ---------- calculator ---------- */
